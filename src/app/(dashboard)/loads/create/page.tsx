@@ -67,7 +67,7 @@ const INITIAL_STATE: FormData = {
   title: "",
   commodity: "General Freight",
   weight: "",
-  equipmentType: "Flatbed",
+  equipmentType: "flatbed",
   category: "Full Truckload",
   originAddress: "",
   originCity: "",
@@ -82,7 +82,7 @@ const INITIAL_STATE: FormData = {
   deliveryDate: "",
   deliveryTime: "14:00",
   rate: "",
-  rateType: "flat",
+  rateType: "per_trip",
   notesToCarrier: "",
   hazmat: false,
   liftgate: false,
@@ -90,9 +90,17 @@ const INITIAL_STATE: FormData = {
   trailerLength: "",
 };
 
-const EQUIPMENT_OPTIONS = ["Flatbed", "Dry Van", "Reefer", "Step Deck", "Lowboy", "Tanker", "Power Only"];
+const EQUIPMENT_OPTIONS = [
+  { value: "flatbed", label: "Flatbed" },
+  { value: "dry_van", label: "Dry Van" },
+  { value: "reefer", label: "Reefer" },
+  { value: "step_deck", label: "Step Deck" },
+  { value: "lowboy", label: "Lowboy" },
+  { value: "tanker", label: "Tanker" },
+  { value: "power_only", label: "Power Only" },
+];
 const RATE_TYPES = [
-  { value: "flat", label: "Flat Rate" },
+  { value: "per_trip", label: "Flat Rate" },
   { value: "per_mile", label: "Per Mile" },
 ];
 
@@ -107,13 +115,14 @@ export default function CreateLoadPage() {
   };
 
   const handleOriginPlaceSelect = (place: any) => {
-    const city = place.address?.city || place.address?.town || place.address?.village || "";
-    const state = place.address?.state || "";
-    const zip = place.address?.postcode || "";
-    const road = place.address?.road || "";
+    const addr = place.address || {};
+    const city = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || addr.county || "";
+    const state = addr.state || "";
+    const zip = addr.postcode || "";
+    const road = addr.road || "";
     setForm((prev) => ({
       ...prev,
-      originAddress: road || place.display_name.split(",")[0],
+      originAddress: place.display_name,
       originCity: city,
       originState: state,
       originZip: zip,
@@ -121,43 +130,70 @@ export default function CreateLoadPage() {
   };
 
   const handleDestPlaceSelect = (place: any) => {
-    const city = place.address?.city || place.address?.town || place.address?.village || "";
-    const state = place.address?.state || "";
-    const zip = place.address?.postcode || "";
-    const road = place.address?.road || "";
+    const addr = place.address || {};
+    const city = addr.city || addr.town || addr.village || addr.hamlet || addr.suburb || addr.county || "";
+    const state = addr.state || "";
+    const zip = addr.postcode || "";
+    const road = addr.road || "";
     setForm((prev) => ({
       ...prev,
-      destAddress: road || place.display_name.split(",")[0],
+      destAddress: place.display_name,
       destCity: city,
       destState: state,
       destZip: zip,
     }));
   };
 
-  const validateForm = (): boolean => {
-    if (!form.title) { toast.error("Please enter a Load Title"); return false; }
-    if (!form.weight || Number(form.weight) <= 0) { toast.error("Please enter a valid weight > 0"); return false; }
-    if (!form.equipmentType) { toast.error("Please select an equipment type"); return false; }
-    if (!form.originCity || !form.originState || !form.destCity || !form.destState) {
-      toast.error("Please enter both pickup and delivery locations");
-      return false;
+  const validateForm = () => {
+    if (!form.title) { toast.error("Please enter a Load Title"); return null; }
+    if (!form.weight || Number(form.weight) <= 0) { toast.error("Please enter a valid weight > 0"); return null; }
+    if (!form.equipmentType) { toast.error("Please select an equipment type"); return null; }
+    
+    let oCity = form.originCity;
+    let oState = form.originState;
+    let dCity = form.destCity;
+    let dState = form.destState;
+
+    if (!oCity && form.originAddress) {
+      const parts = form.originAddress.split(",");
+      if (parts.length >= 2) {
+        oCity = parts[0].trim();
+        oState = parts[1].trim();
+      }
     }
+    if (!dCity && form.destAddress) {
+      const parts = form.destAddress.split(",");
+      if (parts.length >= 2) {
+        dCity = parts[0].trim();
+        dState = parts[1].trim();
+      }
+    }
+
+    if (!oCity || !oState || !dCity || !dState) {
+      toast.error("Please enter both pickup and delivery locations (City, State)");
+      return null;
+    }
+
     if (!form.pickupDate || !form.deliveryDate) {
       toast.error("Please enter pickup and delivery dates");
-      return false;
+      return null;
     }
     const pDate = new Date(`${form.pickupDate}T${form.pickupTime || '08:00'}:00`);
     const dDate = new Date(`${form.deliveryDate}T${form.deliveryTime || '17:00'}:00`);
-    if (pDate <= new Date()) { toast.error("Pickup date must be in the future"); return false; }
-    if (dDate <= pDate) { toast.error("Delivery date must be after pickup date"); return false; }
+    if (pDate <= new Date()) { toast.error("Pickup date must be in the future"); return null; }
+    if (dDate <= pDate) { toast.error("Delivery date must be after pickup date"); return null; }
     if (!form.rate || Number(form.rate) <= 0) {
       toast.error("Please enter a valid rate > 0");
-      return false;
+      return null;
     }
-    return true;
+    
+    return { oCity, oState, dCity, dState };
   };
 
   const handlePost = async () => {
+    const validated = validateForm();
+    if (!validated) return;
+
     try {
       setIsSubmitting(true);
       const payload = {
@@ -167,17 +203,17 @@ export default function CreateLoadPage() {
         truckType: form.equipmentType,
         origin: {
           address: form.originAddress,
-          city: form.originCity,
-          state: form.originState,
-          zip: form.originZip,
+          city: validated.oCity,
+          state: validated.oState,
+          zip: form.originZip || "00000",
           contactName: "Main Contact",
           contactPhone: "555-0199"
         },
         destination: {
           address: form.destAddress,
-          city: form.destCity,
-          state: form.destState,
-          zip: form.destZip,
+          city: validated.dCity,
+          state: validated.dState,
+          zip: form.destZip || "00000",
           contactName: "Main Contact",
           contactPhone: "555-0199"
         },
@@ -190,7 +226,7 @@ export default function CreateLoadPage() {
         liftgate: form.liftgate,
         teamDriver: form.teamDriver,
         trailerLength: form.trailerLength ? Number(form.trailerLength) : undefined,
-        shipperName: "Internal", // Added required fields
+        shipperName: "Broker",
         shipperPhone: "555-0000",
         shipperEmail: "broker@flow.com"
       };
@@ -227,8 +263,8 @@ export default function CreateLoadPage() {
         weight: form.weight ? Number(form.weight) : 0,
         truckType: form.equipmentType,
         status: "draft",
-        origin: { city: form.originCity, state: form.originState, address: form.originAddress, zip: form.originZip, contactName: "Draft", contactPhone: "000" },
-        destination: { city: form.destCity, state: form.destState, address: form.destAddress, zip: form.destZip, contactName: "Draft", contactPhone: "000" },
+        origin: { city: form.originCity, state: form.originState, address: form.originAddress, zip: form.originZip || "00000", contactName: "Draft", contactPhone: "000" },
+        destination: { city: form.destCity, state: form.destState, address: form.destAddress, zip: form.destZip || "00000", contactName: "Draft", contactPhone: "000" },
         shipperName: "Draft",
         shipperPhone: "000",
         shipperEmail: "draft@flow.com",
@@ -271,9 +307,7 @@ export default function CreateLoadPage() {
                 Save as Draft
               </button>
               <button
-                onClick={() => {
-                  if (validateForm()) handlePost();
-                }}
+                onClick={handlePost}
                 disabled={isSubmitting}
                 className="h-11 px-6 rounded-lg bg-primary text-white text-xs font-bold shadow-lg hover:bg-primary-active transition-all"
               >
@@ -309,7 +343,7 @@ export default function CreateLoadPage() {
                       value={form.equipmentType}
                       onChange={(e) => update("equipmentType", e.target.value)}
                     >
-                      {EQUIPMENT_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                      {EQUIPMENT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                     </select>
                   </div>
                   <div className="space-y-1">
@@ -521,9 +555,7 @@ export default function CreateLoadPage() {
 
           <div className="flex justify-center pt-8 mt-4 border-t border-hairline">
              <button
-                onClick={() => {
-                  if (validateForm()) handlePost();
-                }}
+                onClick={handlePost}
                 disabled={isSubmitting}
                 className="h-14 px-16 rounded-xl bg-primary text-white text-sm font-bold shadow-xl hover:shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
               >
