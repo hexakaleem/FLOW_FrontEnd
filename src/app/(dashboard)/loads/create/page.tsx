@@ -907,6 +907,7 @@ export default function CreateLoadPage() {
                     />
                   </div>
                 </div>
+              </div>
               <div className="mt-8 bg-blue-50 text-blue-700 p-4 rounded-xl flex items-start gap-3 border border-blue-100">
                 <div className="mt-0.5 w-5 h-5 flex items-center justify-center bg-blue-600 text-white rounded-full font-bold text-xs">i</div>
                 <p className="text-sm font-semibold">Tip: More accurate details help you get better rates from carriers.</p>
