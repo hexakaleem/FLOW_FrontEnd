@@ -1507,6 +1507,7 @@ export default function CreateLoadPage() {
             )}
           </div>
           )}
+          </div>
         </div>
       </div>
     </PermissionGate>
