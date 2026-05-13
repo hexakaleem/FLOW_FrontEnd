@@ -38,11 +38,17 @@ interface Load {
 }
 
 interface Filters {
-  origin: string;
-  destination: string;
-  equipmentType: string;
-  minRate: string;
-  maxRate: string;
+  origin?: string;
+  originLat?: number | null;
+  originLng?: number | null;
+  originRadius?: number;
+  destination?: string;
+  destLat?: number | null;
+  destLng?: number | null;
+  destRadius?: number;
+  equipmentType?: string;
+  minRate?: string;
+  maxRate?: string;
 }
 
 function formatAge(createdAt?: string): string {
@@ -77,8 +83,18 @@ export default function MarketplacePage() {
     try {
       const params: Record<string, string | number> = { limit: 50 };
       if (filters) {
-        if (filters.origin) params.originCity = filters.origin;
-        if (filters.destination) params.destCity = filters.destination;
+        if (filters.originLat) params.originLat = filters.originLat;
+        if (filters.originLng) params.originLng = filters.originLng;
+        if (filters.originRadius !== undefined) params.originRadius = filters.originRadius;
+        
+        if (filters.destLat) params.destLat = filters.destLat;
+        if (filters.destLng) params.destLng = filters.destLng;
+        if (filters.destRadius !== undefined) params.destRadius = filters.destRadius;
+
+        // Fallback to text search if no coordinates
+        if (!filters.originLat && filters.origin) params.originCity = filters.origin;
+        if (!filters.destLat && filters.destination) params.destCity = filters.destination;
+
         if (filters.equipmentType) params.truckType = filters.equipmentType;
         if (filters.minRate) params.minRate = Number(filters.minRate);
         if (filters.maxRate) params.maxRate = Number(filters.maxRate);
