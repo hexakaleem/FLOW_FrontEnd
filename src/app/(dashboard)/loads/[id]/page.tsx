@@ -865,26 +865,8 @@ export default function LoadDetailPage() {
                           Cancelled
                         </div>
                       )}
-                    </PermissionGate>
 
-                    {/* Carrier-only actions */}
-                    <PermissionGate roles={["carrier", "independent_driver"]}>
-                      {(req.status === "pending" || (req.status === "accepted" && load.status === "booked")) && (
-                        <button
-                          onClick={() => handleCancelBid(req._id)}
-                          disabled={actionLoading === req._id}
-                          className="btn btn-sm w-full h-9 text-[10px] font-semibold text-danger border border-danger/30 hover:bg-danger-light"
-                        >
-                          {actionLoading === req._id ? (
-                            <CircleNotch size={12} weight="bold" className="animate-spin" />
-                          ) : (
-                            req.status === "accepted" ? "Cancel Booking" : "Withdraw Bid"
-                          )}
-                        </button>
-                      )}
-                    </PermissionGate>
-
-                      {/* Inline counter offer input */}
+                      {/* Inline counter offer input (Broker Only) */}
                       {showCounterInput === req._id && (
                         <div className="flex gap-2 items-center pt-1">
                           <div className="relative flex-1">
@@ -922,6 +904,24 @@ export default function LoadDetailPage() {
                         </div>
                       )}
                     </PermissionGate>
+
+                    {/* Carrier-only actions */}
+                    <PermissionGate roles={["carrier", "independent_driver"]}>
+                      {(req.status === "pending" || (req.status === "accepted" && load.status === "booked")) && (
+                        <button
+                          onClick={() => handleCancelBid(req._id)}
+                          disabled={actionLoading === req._id}
+                          className="btn btn-sm w-full h-9 text-[10px] font-semibold text-danger border border-danger/30 hover:bg-danger-light"
+                        >
+                          {actionLoading === req._id ? (
+                            <CircleNotch size={12} weight="bold" className="animate-spin" />
+                          ) : (
+                            req.status === "accepted" ? "Cancel Booking" : "Withdraw Bid"
+                          )}
+                        </button>
+                      )}
+                    </PermissionGate>
+
 
                     {/* Carrier/Driver: Submit Booking Request on a load */}
                     <PermissionGate roles={["carrier", "independent_driver"]}>
