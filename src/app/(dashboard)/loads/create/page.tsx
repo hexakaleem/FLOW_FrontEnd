@@ -76,6 +76,7 @@ interface FormData {
   aiLow: number;
   aiMarket: number;
   aiHigh: number;
+  detentionRate: string;
 
   // Step 4 — Requirements
   trailerLength: string;
@@ -122,6 +123,7 @@ const INITIAL_STATE: FormData = {
   aiLow: 0,
   aiMarket: 0,
   aiHigh: 0,
+  detentionRate: "",
 
   trailerLength: "",
   weightLimit: "",
@@ -862,8 +864,8 @@ export default function CreateLoadPage() {
                   </strong>
                 </div>
                 {form.aiMarket > 0 ? (
-                  <>
-                    <p className="text-sm font-medium text-muted mb-4">
+                  <div className="space-y-4">
+                    <p className="text-sm font-medium text-muted">
                       {form.originCity || "Origin"} →{" "}
                       {form.destCity || "Destination"} market average:{" "}
                       <span className="text-ink font-semibold">
@@ -871,79 +873,22 @@ export default function CreateLoadPage() {
                       </span>
                     </p>
                     <div className="flex gap-3">
-                      <span className="badge badge-pill badge-pill-green px-3 py-1.5  font-semibold">
+                      <span className="badge badge-pill badge-pill-green px-3 py-1.5 font-semibold">
                         Low: ${form.aiLow.toLocaleString()}
                       </span>
-                      <span className="badge badge-pill badge-pill-blue px-3 py-1.5  font-semibold">
+                      <span className="badge badge-pill badge-pill-blue px-3 py-1.5 font-semibold">
                         Market: ${form.aiMarket.toLocaleString()}
                       </span>
-                      <span className="badge badge-pill badge-pill-amber px-3 py-1.5  font-semibold">
+                      <span className="badge badge-pill badge-pill-amber px-3 py-1.5 font-semibold">
                         High: ${form.aiHigh.toLocaleString()}
                       </span>
                     </div>
-                  </>
+                  </div>
                 ) : (
-                  <p className="text-sm font-medium text-muted mb-4">
-                    AI pricing suggestions will appear once you proceed.
+                  <p className="text-sm font-medium text-muted">
+                    AI pricing suggestions will appear once you enter origin, destination, and equipment type.
                   </p>
                 )}
-              </div>
-
-              {/* Additional rates */}
-              <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
-                    Detention Rate ($/hr)
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
-                    placeholder="Optional"
-                    value={form.detentionRate}
-                    onChange={(e) => update("detentionRate", e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
-                    TONU Rate ($)
-                  </label>
-                  <input
-                    type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
-                    placeholder="Optional"
-                    value={form.tonuRate}
-                    onChange={(e) => update("tonuRate", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Escrow toggle */}
-              <div className="flex items-center justify-between rounded-md bg-surface-soft p-5 border border-hairline">
-                <div className="flex items-center gap-3">
-                  <LockSimple size={20} weight="bold" className="text-ink" />
-                  <div>
-                    <div className="text-[11px] font-semibold  text-ink">
-                      Hold Payment in Escrow
-                    </div>
-                    <div className=" font-bold text-muted mt-0.5">
-                      Funds released upon delivery confirmation
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => update("useEscrow", !form.useEscrow)}
-                  className={cn(
-                    "relative inline-flex h-7 w-12 items-center rounded-full transition-colors",
-                    form.useEscrow ? "bg-primary" : "bg-border",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "inline-block h-5 w-5 rounded-full bg-white shadow-md transition-transform",
-                      form.useEscrow ? "translate-x-6" : "translate-x-1",
-                    )}
-                  />
-                </button>
               </div>
             </div>
           )}
@@ -1167,16 +1112,6 @@ export default function CreateLoadPage() {
                     {form.rateType === "per_mile" ? "Per Mile" : "Flat Rate"}
                   </span>
                 </div>
-                <div className="mt-2 flex gap-5 text-[11px] font-bold text-muted">
-                  {form.detentionRate && (
-                    <span>Detention: ${form.detentionRate}/hr</span>
-                  )}
-                  {form.tonuRate && <span>TONU: ${form.tonuRate}</span>}
-                  {form.useEscrow && (
-                    <span className="text-ink flex items-center gap-1">
-                      <LockSimple size={12} weight="bold" /> Escrow
-                    </span>
-                  )}
                 </div>
               </div>
 

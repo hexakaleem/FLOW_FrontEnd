@@ -21,6 +21,17 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -151,6 +162,12 @@ export default function MyBookingsPage() {
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState("Active");
+
+  // Counter Dialog State
+  const [showCounterDialog, setShowCounterDialog] = useState(false);
+  const [counterValue, setCounterValue] = useState("");
+  const [selectedLoadId, setSelectedLoadId] = useState("");
+  const [selectedBookingId, setSelectedBookingId] = useState("");
   const [bookings, setBookings] = useState<BookingEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -246,19 +263,27 @@ export default function MyBookingsPage() {
     }
   };
 
-  const handleSendCounter = async (loadId: string, bookingId?: string) => {
+  const openCounterDialog = (loadId: string, bookingId?: string) => {
     if (!bookingId) return;
-    const counterRate = prompt("Enter your counter rate ($):");
-    if (!counterRate || isNaN(Number(counterRate))) {
+    setSelectedLoadId(loadId);
+    setSelectedBookingId(bookingId);
+    setCounterValue("");
+    setShowCounterDialog(true);
+  };
+
+  const handleSendCounter = async () => {
+    if (!selectedBookingId || !selectedLoadId) return;
+    if (!counterValue || isNaN(Number(counterValue))) {
       toast.error("Please enter a valid rate");
       return;
     }
-    setActionLoading(bookingId);
+    setActionLoading(selectedBookingId);
     try {
-      await api.post(`/loads/${loadId}/counteroffer`, {
-        proposedRate: Number(counterRate),
+      await api.post(`/loads/${selectedLoadId}/counteroffer`, {
+        proposedRate: Number(counterValue),
       });
       toast.success("Counter offer sent!");
+      setShowCounterDialog(false);
       fetchBookings();
     } catch (err: unknown) {
       const msg =
@@ -582,7 +607,7 @@ export default function MyBookingsPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleSendCounter(ld._id, booking._id);
+                          openCounterDialog(ld._id, booking._id);
                         }}
                         disabled={actionLoading === booking._id}
                         className="btn btn-secondary btn-sm h-10 px-5  font-semibold"
@@ -684,6 +709,42 @@ export default function MyBookingsPage() {
           })
         )}
       </div>
+
+      {/* Counter Offer Dialog */}
+      <Dialog open={showCounterDialog} onOpenChange={setShowCounterDialog}>
+        <DialogContent className="sm:max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle>Send Counter Offer</DialogTitle>
+            <DialogDescription>
+              Enter the rate you would like to propose to the broker for this load.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="rate">Proposed Rate ($)</Label>
+              <Input
+                id="rate"
+                type="number"
+                placeholder="0.00"
+                value={counterValue}
+                onChange={(e) => setCounterValue(e.target.value)}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCounterDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendCounter}
+              disabled={actionLoading !== null}
+            >
+              {actionLoading !== null ? "Sending..." : "Send Counter"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
