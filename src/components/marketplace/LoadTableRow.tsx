@@ -16,7 +16,7 @@ interface Load {
   weight: string;
   length: string;
   company: string;
-  contact: string;
+  contact?: string;
   creditScore: number;
   daysToPay: number;
 }
