@@ -61,6 +61,10 @@ interface FormData {
   liftgate: boolean;
   teamDriver: boolean;
   trailerLength: string;
+  originLat?: number;
+  originLng?: number;
+  destLat?: number;
+  destLng?: number;
 }
 
 const INITIAL_STATE: FormData = {
@@ -126,6 +130,8 @@ export default function CreateLoadPage() {
       originCity: city,
       originState: state,
       originZip: zip,
+      originLat: parseFloat(place.lat),
+      originLng: parseFloat(place.lon),
     }));
   };
 
@@ -141,6 +147,8 @@ export default function CreateLoadPage() {
       destCity: city,
       destState: state,
       destZip: zip,
+      destLat: parseFloat(place.lat),
+      destLng: parseFloat(place.lon),
     }));
   };
 
@@ -206,6 +214,8 @@ export default function CreateLoadPage() {
           city: validated.oCity,
           state: validated.oState,
           zip: form.originZip || "00000",
+          lat: form.originLat,
+          lng: form.originLng,
           contactName: "Main Contact",
           contactPhone: "555-0199"
         },
@@ -214,6 +224,8 @@ export default function CreateLoadPage() {
           city: validated.dCity,
           state: validated.dState,
           zip: form.destZip || "00000",
+          lat: form.destLat,
+          lng: form.destLng,
           contactName: "Main Contact",
           contactPhone: "555-0199"
         },
@@ -263,8 +275,8 @@ export default function CreateLoadPage() {
         weight: form.weight ? Number(form.weight) : 0,
         truckType: form.equipmentType,
         status: "draft",
-        origin: { city: form.originCity, state: form.originState, address: form.originAddress, zip: form.originZip || "00000", contactName: "Draft", contactPhone: "000" },
-        destination: { city: form.destCity, state: form.destState, address: form.destAddress, zip: form.destZip || "00000", contactName: "Draft", contactPhone: "000" },
+        origin: { city: form.originCity, state: form.originState, address: form.originAddress, zip: form.originZip || "00000", lat: form.originLat, lng: form.originLng, contactName: "Draft", contactPhone: "000" },
+        destination: { city: form.destCity, state: form.destState, address: form.destAddress, zip: form.destZip || "00000", lat: form.destLat, lng: form.destLng, contactName: "Draft", contactPhone: "000" },
         shipperName: "Draft",
         shipperPhone: "000",
         shipperEmail: "draft@flow.com",
