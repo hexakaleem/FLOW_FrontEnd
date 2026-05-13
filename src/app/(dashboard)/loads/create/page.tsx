@@ -177,6 +177,11 @@ export default function CreateLoadPage() {
       }
     }
 
+    if (!form.title.trim()) {
+      toast.error("Please enter a load title");
+      return null;
+    }
+
     if (!oCity || !oState || !dCity || !dState) {
       toast.error("Please enter both pickup and delivery locations (City, State)");
       return null;
@@ -338,7 +343,7 @@ export default function CreateLoadPage() {
                 </div>
                 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Load Title</label>
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Load Title <span className="text-danger">*</span></label>
                   <input
                     className="w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2.5 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="e.g., Heavy Machinery to Chicago"
@@ -349,7 +354,7 @@ export default function CreateLoadPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Equipment Type</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Equipment Type <span className="text-danger">*</span></label>
                     <select
                       className="w-full h-10 rounded-lg border border-hairline bg-surface-soft px-3 text-sm font-medium outline-none focus:border-primary transition-all"
                       value={form.equipmentType}
@@ -359,7 +364,7 @@ export default function CreateLoadPage() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Weight (lbs)</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Weight (lbs) <span className="text-danger">*</span></label>
                     <input
                       type="number"
                       className="w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
@@ -389,7 +394,7 @@ export default function CreateLoadPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Rate ($)</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Rate ($) <span className="text-danger">*</span></label>
                     <input
                       type="number"
                       className="w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
@@ -399,7 +404,7 @@ export default function CreateLoadPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Rate Type</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Rate Type <span className="text-danger">*</span></label>
                     <select
                       className="w-full h-10 rounded-lg border border-hairline bg-surface-soft px-3 text-sm font-medium outline-none focus:border-primary transition-all"
                       value={form.rateType}
@@ -434,7 +439,7 @@ export default function CreateLoadPage() {
                 </div>
                 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Address Autocomplete</label>
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Address Autocomplete <span className="text-danger">*</span></label>
                   <LocationAutocomplete
                     value={form.originAddress}
                     onChange={(val) => update("originAddress", val)}
@@ -446,7 +451,7 @@ export default function CreateLoadPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Date</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Date <span className="text-danger">*</span></label>
                     <input
                       type="date"
                       className="w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
@@ -473,7 +478,7 @@ export default function CreateLoadPage() {
                 </div>
                 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Address Autocomplete</label>
+                  <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Address Autocomplete <span className="text-danger">*</span></label>
                   <LocationAutocomplete
                     value={form.destAddress}
                     onChange={(val) => update("destAddress", val)}
@@ -485,7 +490,7 @@ export default function CreateLoadPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Date</label>
+                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">Date <span className="text-danger">*</span></label>
                     <input
                       type="date"
                       className="w-full rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"

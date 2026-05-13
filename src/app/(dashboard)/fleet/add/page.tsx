@@ -220,9 +220,15 @@ export default function AddVehiclePage() {
   };
 
   const handleNext = () => {
-    if (step === 1 && !plateNumber.trim()) {
-      toast.error("License plate is required");
-      return;
+    if (step === 1) {
+      if (!plateNumber.trim()) return toast.error("License plate is required");
+      if (!plateState) return toast.error("License plate state is required");
+      if (!internalId.trim()) return toast.error("Internal ID is required");
+    }
+    if (step === 2) {
+      if (!year) return toast.error("Year is required");
+      if (!make.trim()) return toast.error("Make is required");
+      if (!model.trim()) return toast.error("Model is required");
     }
     setStep((s) => Math.min(s + 1, 3));
   };
@@ -296,7 +302,7 @@ export default function AddVehiclePage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="ml-1  font-semibold  text-muted">
-                  License Plate
+                  License Plate <span className="text-danger">*</span>
                 </label>
                 <input
                   value={plateNumber}
@@ -307,7 +313,7 @@ export default function AddVehiclePage() {
               </div>
               <div className="space-y-2">
                 <label className="ml-1  font-semibold  text-muted">
-                  State
+                  State <span className="text-danger">*</span>
                 </label>
                 <select
                   value={plateState}
@@ -326,7 +332,7 @@ export default function AddVehiclePage() {
 
             <div className="space-y-2">
               <label className="ml-1  font-semibold  text-muted">
-                VIN Number
+                VIN Number <span className="text-danger">*</span>
               </label>
               <div className="flex gap-2">
                 <input
@@ -360,12 +366,13 @@ export default function AddVehiclePage() {
 
             <div className="space-y-2">
               <label className="ml-1  font-semibold  text-muted">
-                Internal ID <span className="text-muted">(optional)</span>
+                Internal ID <span className="text-danger">*</span>
               </label>
               <input
                 value={internalId}
+                required
                 onChange={(e) => setInternalId(e.target.value)}
-                placeholder="e.g. FB-2847"
+                placeholder="e.g. TRK-001"
                 className="w-full rounded-md border border-hairline bg-surface-soft px-4 py-3 text-sm font-bold text-ink placeholder:text-muted outline-none focus:border-primary transition-all"
               />
             </div>
@@ -432,7 +439,7 @@ export default function AddVehiclePage() {
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <label className="ml-1  font-semibold  text-muted">
-                  Year
+                  Year <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -444,7 +451,7 @@ export default function AddVehiclePage() {
               </div>
               <div className="space-y-2">
                 <label className="ml-1  font-semibold  text-muted">
-                  Make
+                  Make <span className="text-danger">*</span>
                 </label>
                 <input
                   value={make}
@@ -455,7 +462,7 @@ export default function AddVehiclePage() {
               </div>
               <div className="space-y-2">
                 <label className="ml-1  font-semibold  text-muted">
-                  Model
+                  Model <span className="text-danger">*</span>
                 </label>
                 <input
                   value={model}
