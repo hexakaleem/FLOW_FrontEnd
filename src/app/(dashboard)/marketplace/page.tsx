@@ -100,6 +100,21 @@ export default function MarketplacePage() {
     }
   }, []);
 
+  const handleBookLoad = async (loadId: string) => {
+    try {
+      const response = await api.post(`/loads/${loadId}/booking-request`);
+      if (response.data.success) {
+        toast.success("Booking request sent successfully!");
+        setExpandedLoadId(null);
+        // Refresh loads to reflect any status changes
+        fetchLoads();
+      }
+    } catch (err: any) {
+      const msg = err.response?.data?.error?.message || "Failed to send booking request";
+      toast.error(msg);
+    }
+  };
+
   useEffect(() => {
     fetchLoads();
   }, [fetchLoads]);
@@ -190,6 +205,7 @@ export default function MarketplacePage() {
                   load={uiLoad}
                   isExpanded={isExpanded}
                   onToggle={() => setExpandedLoadId(isExpanded ? null : load._id)}
+                  onBook={() => handleBookLoad(load._id)}
                 />
                 {isExpanded && (
                   <LoadExpandedDetails
@@ -198,6 +214,7 @@ export default function MarketplacePage() {
                       equipment: uiLoad.equipmentDetails,
                       broker: uiLoad.brokerDetails,
                     }}
+                    onBook={() => handleBookLoad(load._id)}
                   />
                 )}
               </React.Fragment>

@@ -25,9 +25,10 @@ interface LoadTableRowProps {
   load: Load;
   isExpanded: boolean;
   onToggle: () => void;
+  onBook: () => void;
 }
 
-export function LoadTableRow({ load, isExpanded, onToggle }: LoadTableRowProps) {
+export function LoadTableRow({ load, isExpanded, onToggle, onBook }: LoadTableRowProps) {
   return (
     <div
       onClick={onToggle}
@@ -62,7 +63,10 @@ export function LoadTableRow({ load, isExpanded, onToggle }: LoadTableRowProps) 
           <span className="font-bold text-slate-900">{load.daysToPay}</span> DTP
         </div>
         <div className="w-20 flex justify-end">
-          <button className="px-3 py-1 bg-white border border-dat-blue text-dat-blue text-[11px] font-bold rounded hover:bg-dat-blue hover:text-white transition-all uppercase tracking-wider">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onBook(); }}
+            className="px-3 py-1 bg-white border border-dat-blue text-dat-blue text-[11px] font-bold rounded hover:bg-dat-blue hover:text-white transition-all uppercase tracking-wider"
+          >
             Book
           </button>
         </div>
