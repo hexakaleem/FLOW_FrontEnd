@@ -36,80 +36,81 @@ export function MarketplaceFilters({ onSearch, isLoading }: MarketplaceFiltersPr
 
   return (
     <div className="flex flex-col bg-canvas border-b border-hairline shadow-sm">
-      {/* Search Tabs / Breadcrumbs */}
+      {/* Search Tabs / Breadcrumbs — Cal.com Nav Pill Group style */}
       <div className="flex items-center gap-1 px-4 py-2 bg-surface-soft border-b border-hairline overflow-x-auto scrollbar-hide">
-        <div className="flex items-center gap-2 px-3 py-1 bg-canvas border border-hairline rounded-sm shadow-sm">
+        <div className="flex items-center gap-2 px-3.5 py-1.5 bg-canvas border border-hairline rounded-pill shadow-sm">
           <div className="w-2 h-2 rounded-full bg-success" />
-          <span className="text-[11px] font-medium text-ink whitespace-nowrap">
+          <span className="text-[13px] font-medium text-ink whitespace-nowrap">
             {filters.origin || "Dallas, TX"} <span className="text-muted-foreground mx-1">→</span> {filters.destination || "Anywhere"}
           </span>
-          <button className="text-muted-foreground hover:text-ink text-[10px]">✕</button>
+          <button className="text-muted-foreground hover:text-ink text-[10px] ml-1">✕</button>
         </div>
-        <button className="flex items-center justify-center h-7 w-7 rounded bg-dat-blue text-white shadow-sm hover:bg-dat-blue-hover transition-colors ml-2 shrink-0">
+        <button className="flex items-center justify-center h-8 w-8 rounded-full bg-primary text-white shadow-sm hover:bg-primary-active transition-colors ml-2 shrink-0">
           <Plus size={16} weight="bold" />
         </button>
       </div>
 
       {/* Main Filter Rows */}
-      <div className="p-4 space-y-3">
+      <div className="p-8 space-y-6">
         {/* Row 1: Origins & Destinations */}
-        <div className="flex items-center gap-4">
-          <div className="flex-1 flex items-center gap-2">
-            <div className="flex-1 group">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Origin</label>
-              <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue focus-within:ring-1 focus-within:ring-dat-blue transition-all">
+        <div className="flex items-center gap-6">
+          <div className="flex-1 flex items-center gap-3">
+            <div className="flex-1">
+              <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">Origin</label>
+              <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md focus-within:border-ink focus-within:ring-1 focus-within:ring-ink transition-all">
                 <input
                   type="text"
                   placeholder="City, State"
                   value={filters.origin}
                   onChange={(e) => handleInputChange("origin", e.target.value)}
-                  className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-muted-foreground/50"
+                  className="w-full bg-transparent text-[16px] text-ink outline-none placeholder:text-muted-foreground/30"
                 />
               </div>
             </div>
-            <div className="w-20">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">DH-O</label>
-              <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue focus-within:ring-1 focus-within:ring-dat-blue transition-all">
+            <div className="w-24">
+              <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">DH-O</label>
+              <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md focus-within:border-ink focus-within:ring-1 focus-within:ring-ink transition-all">
                 <input
                   type="number"
                   value={filters.dho}
                   onChange={(e) => handleInputChange("dho", parseInt(e.target.value))}
-                  className="w-full bg-transparent text-sm font-medium text-ink outline-none"
+                  className="w-full bg-transparent text-[16px] text-ink outline-none"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center pt-5">
-            <ArrowsLeftRight 
-              size={18} 
-              weight="regular" 
-              className="text-dat-blue cursor-pointer hover:scale-110 transition-transform" 
-              onClick={() => handleInputChange("destination", filters.origin)}
-            />
+          <div className="flex items-center pt-6">
+            <div className="p-2 hover:bg-surface-soft rounded-full transition-colors cursor-pointer group" onClick={() => {
+              const temp = filters.origin;
+              handleInputChange("origin", filters.destination);
+              handleInputChange("destination", temp);
+            }}>
+              <ArrowsLeftRight size={20} weight="regular" className="text-primary group-hover:scale-110 transition-transform" />
+            </div>
           </div>
 
-          <div className="flex-1 flex items-center gap-2">
-            <div className="flex-1 group">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Destination</label>
-              <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue focus-within:ring-1 focus-within:ring-dat-blue transition-all">
+          <div className="flex-1 flex items-center gap-3">
+            <div className="flex-1">
+              <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">Destination</label>
+              <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md focus-within:border-ink focus-within:ring-1 focus-within:ring-ink transition-all">
                 <input
                   type="text"
                   placeholder="City, State"
                   value={filters.destination}
                   onChange={(e) => handleInputChange("destination", e.target.value)}
-                  className="w-full bg-transparent text-sm font-medium text-ink outline-none placeholder:text-muted-foreground/50"
+                  className="w-full bg-transparent text-[16px] text-ink outline-none placeholder:text-muted-foreground/30"
                 />
               </div>
             </div>
-            <div className="w-20">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">DH-D</label>
-              <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue focus-within:ring-1 focus-within:ring-dat-blue transition-all">
+            <div className="w-24">
+              <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">DH-D</label>
+              <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md focus-within:border-ink focus-within:ring-1 focus-within:ring-ink transition-all">
                 <input
                   type="number"
                   value={filters.dhd}
                   onChange={(e) => handleInputChange("dhd", parseInt(e.target.value))}
-                  className="w-full bg-transparent text-sm font-medium text-ink outline-none"
+                  className="w-full bg-transparent text-[16px] text-ink outline-none"
                 />
               </div>
             </div>
@@ -117,61 +118,63 @@ export function MarketplaceFilters({ onSearch, isLoading }: MarketplaceFiltersPr
         </div>
 
         {/* Row 2: Equipment & Specs */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Equipment Type</label>
-            <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue transition-all cursor-pointer">
-              <span className="flex-1 text-sm font-medium text-ink">{filters.equipmentType}</span>
+            <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">Equipment</label>
+            <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md hover:bg-surface-soft transition-all cursor-pointer">
+              <span className="flex-1 text-[16px] text-ink">{filters.equipmentType}</span>
               <CaretDown size={14} weight="bold" className="text-muted-foreground" />
             </div>
           </div>
 
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Load Type</label>
-            <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue transition-all cursor-pointer">
-              <span className="flex-1 text-sm font-medium text-ink">{filters.loadType}</span>
+            <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">Load Type</label>
+            <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md hover:bg-surface-soft transition-all cursor-pointer">
+              <span className="flex-1 text-[16px] text-ink">{filters.loadType}</span>
               <CaretDown size={14} weight="bold" className="text-muted-foreground" />
             </div>
           </div>
 
           <div className="flex-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Date Range</label>
-            <div className="flex items-center h-10 px-3 bg-canvas border border-hairline rounded focus-within:border-dat-blue transition-all cursor-pointer group">
-              <span className="flex-1 text-sm font-medium text-ink">{filters.dateRange}</span>
-              <CalendarBlank size={16} weight="bold" className="text-muted-foreground group-hover:text-dat-blue transition-colors" />
+            <label className="text-[13px] font-semibold text-muted-foreground mb-1.5 block">Date</label>
+            <div className="flex items-center h-10 px-3.5 bg-canvas border border-hairline rounded-md hover:bg-surface-soft transition-all cursor-pointer group">
+              <span className="flex-1 text-[16px] text-ink">{filters.dateRange}</span>
+              <CalendarBlank size={18} weight="bold" className="text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </div>
 
           <button 
             disabled={isLoading}
             onClick={handleSearch}
-            className="flex items-center justify-center gap-2 h-10 px-6 bg-dat-blue text-white rounded font-bold text-xs uppercase tracking-widest shadow-md hover:bg-dat-blue-hover transition-all self-end mb-0.5 disabled:opacity-50"
+            className="flex items-center justify-center gap-2 h-10 px-8 bg-primary text-white rounded-md font-semibold text-[14px] shadow-sm hover:bg-primary-active transition-all self-end mb-0.5 disabled:opacity-50"
           >
             <MagnifyingGlass size={18} weight="bold" />
             {isLoading ? "Searching..." : "Search"}
           </button>
         </div>
 
-        {/* Row 3: Secondary Filters */}
-        <div className="flex items-center gap-6 pt-1">
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-1.5 text-[10px] font-bold text-body-text uppercase tracking-widest hover:text-dat-blue transition-colors group">
-              Load Requirements <CaretDown size={12} weight="bold" className="text-muted-foreground group-hover:text-dat-blue" />
+        {/* Row 3: Secondary Filters — Nav Pill Group style */}
+        <div className="flex items-center gap-8 pt-2">
+          <div className="nav-pill-group flex items-center gap-4">
+            <button className="text-[13px] font-medium text-muted hover:text-ink transition-colors flex items-center gap-1.5">
+              Load Requirements <CaretDown size={12} weight="bold" />
             </button>
-            <button className="flex items-center gap-1.5 text-[10px] font-bold text-body-text uppercase tracking-widest hover:text-dat-blue transition-colors group">
-              Search Back - 24 hrs <CaretDown size={12} weight="bold" className="text-muted-foreground group-hover:text-dat-blue" />
+            <button className="text-[13px] font-medium text-muted hover:text-ink transition-colors flex items-center gap-1.5">
+              Search Back - 24 hrs <CaretDown size={12} weight="bold" />
             </button>
-            <button className="flex items-center gap-1.5 text-[10px] font-bold text-body-text uppercase tracking-widest hover:text-dat-blue transition-colors group">
-              Company <CaretDown size={12} weight="bold" className="text-muted-foreground group-hover:text-dat-blue" />
-            </button>
-            <button className="flex items-center gap-1.5 text-[10px] font-bold text-body-text uppercase tracking-widest hover:text-dat-blue transition-colors group">
-              Private Loads <CaretDown size={12} weight="bold" className="text-muted-foreground group-hover:text-dat-blue" />
+            <button className="text-[13px] font-medium text-muted hover:text-ink transition-colors flex items-center gap-1.5">
+              Company <CaretDown size={12} weight="bold" />
             </button>
           </div>
 
-          <button className="px-3 py-1.5 bg-ink text-canvas text-[10px] font-bold uppercase tracking-widest rounded hover:bg-ink/80 transition-colors">
-            Only Bookable
-          </button>
+          <div className="ml-auto flex items-center gap-3">
+            <button className="badge-pill bg-surface-card text-ink text-[13px] font-medium px-4 py-1.5 rounded-pill hover:bg-surface-strong transition-colors">
+              Only Bookable
+            </button>
+            <button className="text-[13px] font-medium text-muted hover:text-ink transition-colors underline decoration-hairline underline-offset-4">
+              Clear all
+            </button>
+          </div>
         </div>
       </div>
     </div>

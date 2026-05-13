@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "react-Link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/store/hooks";
@@ -106,22 +106,19 @@ export function Sidebar() {
   });
 
   return (
-    <aside className="fixed top-0 left-0 bottom-0 z-50 flex w-[240px] flex-col border-r border-hairline bg-sidebar shadow-2xl">
-      <div className="px-6 py-6">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2 group"
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded bg-dat-blue text-white font-bold text-lg">
+    <aside className="fixed top-0 left-0 bottom-0 z-50 flex w-[240px] flex-col border-r border-hairline bg-canvas shadow-sm">
+      <div className="px-6 py-8">
+        <div className="flex items-center gap-2 group">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white font-bold text-lg">
             F
           </div>
-          <span className="text-xl font-bold tracking-tighter text-white">
-            FLOW<span className="text-dat-blue">ONE</span>
+          <span className="text-xl font-bold tracking-[-1px] text-ink uppercase">
+            FLOW<span className="text-muted-foreground/40 font-normal">ONE</span>
           </span>
-        </Link>
+        </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-2 scrollbar-hide">
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-2 scrollbar-hide">
         {visibleNavItems.map(({ href, label, Icon }) => {
           const isActive =
             pathname === href ||
@@ -131,10 +128,10 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-all",
+                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-[14px] font-semibold transition-all",
                 isActive
-                  ? "bg-dat-blue text-white shadow-lg shadow-dat-blue/20"
-                  : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-white",
+                  ? "bg-surface-soft text-ink ring-1 ring-inset ring-hairline shadow-sm"
+                  : "text-muted-foreground hover:bg-surface-soft hover:text-ink",
               )}
             >
               <Icon
@@ -142,8 +139,8 @@ export function Sidebar() {
                 weight={isActive ? "bold" : "regular"}
                 className={cn(
                   isActive
-                    ? "text-white"
-                    : "text-sidebar-foreground group-hover:text-white",
+                    ? "text-ink"
+                    : "text-muted-foreground group-hover:text-ink",
                 )}
               />
               {label}
@@ -152,23 +149,23 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="p-3 mt-auto border-t border-hairline">
-        <div className="flex items-center gap-2 rounded-lg p-2 transition-colors hover:bg-sidebar-hover group">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-xs font-semibold text-ink">
+      <div className="p-4 mt-auto border-t border-hairline bg-surface-soft/30">
+        <div className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-surface-soft group relative">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-white text-xs font-semibold">
             {user?.firstName?.slice(0, 1)}
             {user?.lastName?.slice(0, 1)}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-medium text-ink">
+            <div className="truncate text-[14px] font-semibold text-ink">
               {user?.firstName} {user?.lastName}
             </div>
-            <div className="text-xs text-muted-foreground capitalize">
+            <div className="text-[12px] text-muted-foreground capitalize font-medium">
               {user?.role?.replace("_", " ")}
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex h-8 w-8 items-center justify-center rounded-md text-muted opacity-0 group-hover:opacity-100 transition-all hover:bg-surface-card hover:text-ink"
+            className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-canvas hover:text-ink border border-transparent hover:border-hairline shadow-sm"
             title="Sign out"
           >
             <SignOut size={18} weight="regular" />

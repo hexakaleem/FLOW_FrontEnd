@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { ArrowRight, Star } from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react";
 
 interface Load {
   _id: string;
@@ -34,38 +34,60 @@ export function LoadTableRow({ load, isExpanded, onToggle, onBook }: LoadTableRo
       onClick={onToggle}
       className={cn(
         "flex flex-col border-b border-hairline transition-all cursor-pointer",
-        isExpanded ? "bg-slate-50 ring-1 ring-inset ring-dat-blue" : "bg-white hover:bg-slate-50/50"
+        isExpanded ? "bg-surface-soft ring-1 ring-inset ring-primary/10" : "bg-canvas hover:bg-surface-soft/50"
       )}
     >
-      <div className="flex items-center h-12 px-4 text-[13px] text-slate-600 font-medium">
-        <div className="w-8 flex justify-center mr-2">
-          <input type="checkbox" className="rounded-sm border-slate-300" onClick={(e) => e.stopPropagation()} />
+      <div className="flex items-center h-14 px-6 text-[14px] text-body-text font-medium">
+        <div className="w-8 flex justify-center mr-3">
+          <input 
+            type="checkbox" 
+            className="rounded-sm border-hairline accent-primary" 
+            onClick={(e) => e.stopPropagation()} 
+          />
         </div>
-        <div className="w-12 text-slate-400">{load.age}</div>
-        <div className="w-20 font-bold text-slate-900">${load.rate.toLocaleString()} $</div>
-        <div className="w-16 text-dat-blue font-bold">{load.trip}</div>
-        <div className="w-40 truncate">{load.origin.city}, {load.origin.state}</div>
-        <div className="w-12 text-slate-400">({load.origin.dh})</div>
-        <div className="w-8 flex justify-center">
-          <ArrowRight size={14} weight="bold" className="text-dat-blue" />
+        
+        <div className="w-14 text-muted-foreground font-normal">{load.age}</div>
+        
+        <div className="w-24 font-semibold text-ink text-[15px]">
+          ${load.rate.toLocaleString()}
         </div>
-        <div className="w-40 truncate">{load.destination.city}, {load.destination.state}</div>
-        <div className="w-12 text-slate-400">({load.destination.dh})</div>
-        <div className="w-20">{load.pickup}</div>
-        <div className="flex-1 min-w-[150px] truncate">
-          {load.equipment} • {load.weight} • {load.length}
+        
+        <div className="w-16 text-primary font-bold">{load.trip}</div>
+        
+        <div className="w-44 truncate font-semibold text-ink">
+          {load.origin.city}, {load.origin.state}
+          <span className="ml-1 text-muted-foreground font-normal text-[12px]">({load.origin.dh})</span>
         </div>
-        <div className="w-40 text-dat-blue hover:underline truncate">{load.company}</div>
-        <div className="w-40 text-slate-400 truncate">{load.contact}</div>
-        <div className="w-24 text-right">
-          <span className="font-bold text-slate-900">{load.creditScore}</span> CS
-          <span className="mx-1 text-slate-300">|</span>
-          <span className="font-bold text-slate-900">{load.daysToPay}</span> DTP
+        
+        <div className="w-10 flex justify-center">
+          <ArrowRight size={14} weight="bold" className="text-primary/40" />
         </div>
-        <div className="w-20 flex justify-end">
+        
+        <div className="w-44 truncate font-semibold text-ink">
+          {load.destination.city}, {load.destination.state}
+          <span className="ml-1 text-muted-foreground font-normal text-[12px]">({load.destination.dh})</span>
+        </div>
+        
+        <div className="w-24 font-medium">{load.pickup}</div>
+        
+        <div className="flex-1 min-w-[160px] truncate text-muted-foreground">
+          {load.equipment} • {load.weight}
+        </div>
+        
+        <div className="w-48 text-ink font-semibold truncate hover:underline underline-offset-4 decoration-hairline">
+          {load.company}
+        </div>
+        
+        <div className="w-28 text-right font-semibold text-ink tabular-nums">
+          {load.creditScore} <span className="text-[10px] text-muted-foreground uppercase ml-0.5">CS</span>
+          <span className="mx-2 text-hairline">|</span>
+          {load.daysToPay} <span className="text-[10px] text-muted-foreground uppercase ml-0.5">DTP</span>
+        </div>
+        
+        <div className="w-24 flex justify-end">
           <button 
             onClick={(e) => { e.stopPropagation(); onBook(); }}
-            className="px-3 py-1 bg-white border border-dat-blue text-dat-blue text-[11px] font-bold rounded hover:bg-dat-blue hover:text-white transition-all uppercase tracking-wider"
+            className="h-8 px-4 bg-primary text-white text-[13px] font-semibold rounded-md shadow-sm hover:bg-primary-active transition-all"
           >
             Book
           </button>

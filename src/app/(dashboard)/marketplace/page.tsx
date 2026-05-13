@@ -44,13 +44,13 @@ const mapLoadToUI = (load: Load) => ({
     city: load.origin.city, 
     state: load.origin.state, 
     dh: Math.floor(Math.random() * 50) + 10, // Mock
-    zip: "75201" // Mock
+    zip: load.origin.zip || "75201" // Mock
   },
   destination: { 
     city: load.destination.city, 
     state: load.destination.state, 
     dh: Math.floor(Math.random() * 50) + 5, // Mock
-    zip: "76201" // Mock
+    zip: load.destination.zip || "76201" // Mock
   },
   pickup: new Date(load.pickupDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
   equipment: load.truckType,
@@ -106,7 +106,6 @@ export default function MarketplacePage() {
       if (response.data.success) {
         toast.success("Booking request sent successfully!");
         setExpandedLoadId(null);
-        // Refresh loads to reflect any status changes
         fetchLoads();
       }
     } catch (err: any) {
@@ -120,80 +119,72 @@ export default function MarketplacePage() {
   }, [fetchLoads]);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+    <div className="flex flex-col h-full bg-canvas overflow-hidden">
       <MarketplaceFilters onSearch={fetchLoads} isLoading={isLoading} />
 
       {/* Results Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-hairline bg-white shrink-0">
-        <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors">
-            <ArrowClockwise size={18} className={isLoading ? "animate-spin" : ""} onClick={fetchLoads} />
+      <div className="flex items-center justify-between px-8 py-6 border-b border-hairline bg-canvas shrink-0">
+        <div className="flex items-center gap-6">
+          <button className="flex items-center gap-2 text-muted-foreground hover:text-ink transition-colors">
+            <ArrowClockwise size={20} className={isLoading ? "animate-spin" : ""} onClick={fetchLoads} />
           </button>
           <div className="flex flex-col">
-            <h2 className="text-sm font-black text-slate-900 uppercase tracking-tighter">
-              {loads.length} Results
-              <span className="ml-3 text-[11px] font-bold text-dat-blue hover:underline cursor-pointer">
-                +598 Similar Results
-              </span>
-            </h2>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-dat-blue uppercase tracking-widest cursor-pointer group">
-              Sort by Age - Newest
-              <CaretDown size={12} weight="bold" className="group-hover:translate-y-0.5 transition-transform" />
+            <h3 className="text-[22px] font-semibold text-ink tracking-tight leading-none">
+              Marketplace <span className="text-muted-foreground font-normal ml-2">({loads.length} loads available)</span>
+            </h3>
+            <div className="flex items-center gap-2 mt-2 text-[13px] font-medium text-primary hover:underline cursor-pointer group">
+              Newest loads first
+              <CaretDown size={14} weight="bold" className="group-hover:translate-y-0.5 transition-transform" />
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <button className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] hover:text-dat-blue transition-colors flex items-center gap-2">
-            $ LANE RATE
-          </button>
-          <button className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] hover:text-dat-blue transition-colors flex items-center gap-2">
-            :: TRI-HAUL <span className="text-[10px] font-medium text-slate-300">(NO ROUTES)</span>
+        <div className="flex items-center gap-8">
+          <button className="text-[13px] font-semibold text-ink uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-2">
+            $ Analyze Lane Rates
           </button>
         </div>
       </div>
 
-      {/* Table Header */}
-      <div className="flex items-center h-10 px-4 bg-slate-50 border-b border-hairline text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0">
-        <div className="w-8 flex justify-center mr-2">
-          <input type="checkbox" className="rounded-sm border-slate-300" />
+      {/* Table Header — Styled as Cal.com product UI fragment */}
+      <div className="flex items-center h-12 px-6 bg-surface-soft border-b border-hairline text-[11px] font-bold text-muted-foreground uppercase tracking-widest shrink-0">
+        <div className="w-8 flex justify-center mr-3">
+          <input type="checkbox" className="rounded-sm border-hairline" />
         </div>
-        <div className="w-12">Age</div>
-        <div className="w-20">Rate</div>
+        <div className="w-14">Age</div>
+        <div className="w-24">Rate</div>
         <div className="w-16">Trip</div>
-        <div className="w-40">Origin</div>
-        <div className="w-12">DH-O</div>
-        <div className="w-8" />
-        <div className="w-40">Destination</div>
-        <div className="w-12">DH-D</div>
-        <div className="w-20">Pick Up</div>
-        <div className="flex-1 min-w-[150px]">Equipment</div>
-        <div className="w-40">Company</div>
-        <div className="w-40">Contact</div>
-        <div className="w-24 text-right">CS | DTP</div>
-        <div className="w-20" />
+        <div className="w-44">Origin</div>
+        <div className="w-10" />
+        <div className="w-44">Destination</div>
+        <div className="w-24">Pick Up</div>
+        <div className="flex-1 min-w-[160px]">Equipment</div>
+        <div className="w-48">Company</div>
+        <div className="w-28 text-right">CS | DTP</div>
+        <div className="w-24" />
       </div>
 
       {/* Load List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto bg-canvas">
         {isLoading ? (
-          <div className="space-y-px">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="h-12 bg-white border-b border-hairline animate-pulse" />
+          <div className="space-y-0">
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="h-14 bg-canvas border-b border-hairline animate-pulse" />
             ))}
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-24 text-slate-400 bg-white">
-            <Warning size={48} weight="thin" className="mb-4 opacity-20" />
-            <p className="text-sm font-medium">{error}</p>
-            <button onClick={fetchLoads} className="mt-4 px-4 py-2 border border-hairline rounded text-xs font-bold hover:bg-slate-50">
-              Retry
+          <div className="flex flex-col items-center justify-center py-32 text-muted-foreground bg-canvas">
+            <Warning size={48} weight="thin" className="mb-4 opacity-30 text-error" />
+            <p className="text-[16px] font-medium">{error}</p>
+            <button onClick={fetchLoads} className="mt-6 h-10 px-6 border border-hairline rounded-md text-[14px] font-semibold hover:bg-surface-soft transition-all">
+              Retry Connection
             </button>
           </div>
         ) : loads.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-slate-400 bg-white">
-            <Package size={48} weight="thin" className="mb-4 opacity-20" />
-            <p className="text-sm font-medium">No loads found matching your criteria</p>
+          <div className="flex flex-col items-center justify-center py-32 text-muted-foreground bg-canvas">
+            <Package size={64} weight="thin" className="mb-6 opacity-20" />
+            <h3 className="text-xl font-semibold text-ink mb-2">No loads available</h3>
+            <p className="text-[14px] font-medium">Try adjusting your filters to see more results</p>
           </div>
         ) : (
           loads.map((load) => {
