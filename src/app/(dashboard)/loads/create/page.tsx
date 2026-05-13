@@ -607,23 +607,6 @@ export default function CreateLoadPage() {
               Fill in the details to reach verified carriers
             </p>
           </div>
-
-          {/* AI Box */}
-          <div className="flex items-center gap-4 p-4 bg-white border border-hairline rounded-xl shadow-sm">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Sparkle size={20} weight="fill" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-ink">Let AI fill it. Paste raw information</p>
-              <p className="text-[11px] font-semibold text-muted">Paste text like pickup, delivery, weight, etc.</p>
-            </div>
-            <button
-              onClick={startAiChat}
-              className="ml-4 flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all bg-primary/10 text-primary hover:bg-primary hover:text-white"
-            >
-              AI <Sparkle size={16} weight="bold" />
-            </button>
-          </div>
         </div>
 
         <div className="flex gap-8 items-start">
@@ -662,7 +645,7 @@ export default function CreateLoadPage() {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 rounded-2xl border border-hairline bg-card shadow-lg backdrop-blur-md min-h-[500px]">
+          <div className="flex-1 rounded-2xl border border-hairline bg-card shadow-lg backdrop-blur-md min-h-[500px] p-8">
             {/* AI Chat Mode */}
           {aiMode && (
             <div className="flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-4 duration-500">
