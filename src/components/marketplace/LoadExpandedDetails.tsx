@@ -8,6 +8,7 @@ import {
   CaretDown,
   Info,
   Package,
+  Star,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
