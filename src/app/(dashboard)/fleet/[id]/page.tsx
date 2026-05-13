@@ -19,6 +19,8 @@ import {
   CheckCircle,
   Engine,
   Cube,
+  Prohibit,
+  Trash,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
@@ -32,7 +34,7 @@ interface Truck {
   plateNumber: string;
   plateState: string;
   internalId: string;
-  status: "available" | "in_transit" | "booked" | "disabled";
+  status: "available" | "in_transit" | "booked" | "disabled" | "removed" | "decommissioned";
   type: string;
   make: string;
   model: string;
@@ -234,6 +236,36 @@ export default function TruckDetailPage() {
       );
     } finally {
       setIsUnassigning(false);
+    }
+  };
+
+  const handleDeactivate = async () => {
+    if (!truck) return;
+    const isCurrentlyDisabled = truck.status === "disabled";
+    const newStatus = isCurrentlyDisabled ? "available" : "disabled";
+    
+    if (!confirm(`Are you sure you want to ${isCurrentlyDisabled ? "activate" : "deactivate"} this truck?`)) return;
+
+    try {
+      await api.patch(`/fleet/trucks/${truckId}`, { status: newStatus });
+      toast.success(`Truck ${isCurrentlyDisabled ? "activated" : "deactivated"} successfully`);
+      fetchTruck();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to update truck status");
+    }
+  };
+
+  const handleRemoveTruck = async () => {
+    if (!truck) return;
+    
+    if (!confirm("Are you sure you want to PERMANENTLY remove this truck from your active fleet? This action cannot be undone.")) return;
+
+    try {
+      await api.delete(`/fleet/trucks/${truckId}`);
+      toast.success("Truck removed successfully");
+      router.push("/fleet");
+    } catch (error: any) {
+      toast.error(error.response?.data?.error?.message || "Failed to remove truck");
     }
   };
 
@@ -545,6 +577,39 @@ export default function TruckDetailPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Management Actions */}
+          <div className="rounded-3xl border border-hairline bg-card p-8 shadow-xl">
+            <h3 className="text-lg font-semibold tracking-tight text-ink mb-6 flex items-center gap-2">
+              <Warning size={22} weight="bold" className="text-danger" />
+              Management
+            </h3>
+            <div className="space-y-4">
+              <button
+                onClick={handleDeactivate}
+                className={cn(
+                  "btn w-full h-11 text-xs font-bold transition-all",
+                  truck.status === "disabled" 
+                    ? "btn-secondary text-primary" 
+                    : "btn-secondary text-amber-600 hover:text-amber-700"
+                )}
+              >
+                {truck.status === "disabled" ? (
+                  <><CheckCircle size={18} weight="bold" /> Activate Truck</>
+                ) : (
+                  <><Prohibit size={18} weight="bold" /> Deactivate Truck</>
+                )}
+              </button>
+              
+              <button
+                onClick={handleRemoveTruck}
+                className="btn btn-ghost-danger w-full h-11 text-xs font-bold"
+              >
+                <Trash size={18} weight="bold" />
+                Remove from Fleet
+              </button>
+            </div>
           </div>
         </div>
 

@@ -26,7 +26,7 @@ interface Vehicle {
   plateNumber: string;
   plateState: string;
   internalId: string;
-  status: "available" | "in_transit" | "booked" | "disabled";
+  status: "available" | "in_transit" | "booked" | "disabled" | "removed" | "decommissioned";
   type: string;
   make: string;
   model: string;
@@ -72,6 +72,9 @@ function statusBadge(status: string) {
       return "badge-pill badge-pill-indigo";
     case "disabled":
       return "badge-pill badge-pill-gray";
+    case "removed":
+    case "decommissioned":
+      return "badge-pill badge-pill-red";
     default:
       return "badge-pill badge-pill-muted";
   }
@@ -86,7 +89,11 @@ function statusLabel(status: string) {
     case "booked":
       return "Booked";
     case "disabled":
-      return "Disabled";
+      return "Deactivated";
+    case "removed":
+      return "Removed";
+    case "decommissioned":
+      return "Decommissioned";
     default:
       return status;
   }
