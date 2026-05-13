@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
 import { LoadTableRow } from "@/components/marketplace/LoadTableRow";
 import { LoadExpandedDetails } from "@/components/marketplace/LoadExpandedDetails";
+import { useAppSelector } from "@/store/hooks";
 import {
   Dialog,
   DialogContent,
@@ -114,6 +115,46 @@ export default function MarketplacePage() {
     fetchLoads();
   }, [fetchLoads]);
 
+  const { user } = useAppSelector((state) => state.auth);
+  const isCarrier = user?.role === "carrier";
+  const isIndependentDriver = user?.role === "independent_driver";
+
+  const [trucks, setTrucks] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [isLoadingFleet, setIsLoadingFleet] = useState(false);
+
+  useEffect(() => {
+    if ((isCarrier || isIndependentDriver) && showBookDialog) {
+      const fetchFleet = async () => {
+        setIsLoadingFleet(true);
+        try {
+          const [trucksRes, driversRes] = await Promise.all([
+            api.get("/fleet/trucks"),
+            isCarrier ? api.get("/teams/members?role=driver") : Promise.resolve({ data: { data: [] } })
+          ]);
+          
+          const truckList = trucksRes.data?.data?.trucks || trucksRes.data?.data || [];
+          setTrucks(truckList);
+
+          if (isCarrier) {
+            setDrivers(driversRes.data?.data || []);
+          }
+
+          // Auto-select for independent driver
+          if (isIndependentDriver && truckList.length > 0) {
+            setBookingTruckId(truckList[0]._id);
+            setBookingDriverId(user.id);
+          }
+        } catch (err) {
+          console.error("Failed to fetch fleet data", err);
+        } finally {
+          setIsLoadingFleet(false);
+        }
+      };
+      fetchFleet();
+    }
+  }, [isCarrier, isIndependentDriver, showBookDialog, user?.id]);
+
   const handleBookClick = (loadId: string) => {
     setBookingLoadId(loadId);
     setShowBookDialog(true);
@@ -126,8 +167,17 @@ export default function MarketplacePage() {
     if (!bookingLoadId) return;
     try {
       const body: Record<string, string> = {};
-      if (bookingTruckId) body.truckId = bookingTruckId;
-      if (bookingDriverId) body.driverId = bookingDriverId;
+      if (!bookingTruckId) {
+        toast.error("Please select a truck");
+        return;
+      }
+      if (!bookingDriverId && !isIndependentDriver) {
+        toast.error("Please select a driver");
+        return;
+      }
+      body.truckId = bookingTruckId;
+      body.driverId = isIndependentDriver ? user!.id : bookingDriverId;
+      
       const response = await api.post(`/loads/${bookingLoadId}/booking-request`, body);
       if (response.data.success) {
         toast.success("Booking request sent successfully!");
@@ -258,6 +308,38 @@ export default function MarketplacePage() {
               Are you sure you want to send a booking request for this load? The broker will review and confirm.
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-muted uppercase tracking-wider">Select Truck</label>
+              <select
+                className="w-full h-10 rounded-md border border-hairline bg-surface-soft px-3 text-sm font-medium outline-none focus:border-primary transition-all"
+                value={bookingTruckId}
+                onChange={(e) => setBookingTruckId(e.target.value)}
+              >
+                <option value="">Select a truck...</option>
+                {trucks.map(t => (
+                  <option key={t._id} value={t._id}>{t.internalId || t.plateNumber} ({t.type})</option>
+                ))}
+              </select>
+            </div>
+
+            {isCarrier && (
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-muted uppercase tracking-wider">Assign Driver</label>
+                <select
+                  className="w-full h-10 rounded-md border border-hairline bg-surface-soft px-3 text-sm font-medium outline-none focus:border-primary transition-all"
+                  value={bookingDriverId}
+                  onChange={(e) => setBookingDriverId(e.target.value)}
+                >
+                  <option value="">Select a driver...</option>
+                  {drivers.map(d => (
+                    <option key={d.userId} value={d.userId}>{d.profile.firstName} {d.profile.lastName}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowBookDialog(false)}>
               Cancel
