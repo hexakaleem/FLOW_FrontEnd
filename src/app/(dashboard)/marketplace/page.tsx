@@ -279,7 +279,6 @@ export default function MarketplacePage() {
                   }}
                   isExpanded={isExpanded}
                   onToggle={() => setExpandedLoadId(isExpanded ? null : load._id)}
-                  onToggle={() => setExpandedLoadId(isExpanded ? null : load._id)}
                   onBook={() => handleBookClick(load)}
                 />
                 {isExpanded && (
