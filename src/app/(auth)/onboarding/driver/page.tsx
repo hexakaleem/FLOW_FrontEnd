@@ -92,10 +92,22 @@ export default function DriverOnboardingPage() {
       await api.patch('/auth/onboarding/stripe', {});
       const prefsRes = await api.patch('/auth/onboarding/prefs', {});
       const newToken = prefsRes.data?.data?.accessToken || localStorage.getItem('token') || '';
+      
       localStorage.setItem('token', newToken);
       document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
 
       dispatch(updateOnboardingStatus(true));
+      
+      if (newToken && user) {
+        const { setCredentials } = await import('@/store/slices/authSlice');
+        dispatch(setCredentials({
+          user,
+          accessToken: newToken,
+          isOnboardingComplete: true,
+          permissions: user.permissions
+        }));
+      }
+
       setIsCompleted(true);
       toast.success('Onboarding complete!');
     } catch (error: any) {

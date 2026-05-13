@@ -150,13 +150,22 @@ export default function CarrierOnboardingPage() {
 
       // 5. Mark prefs step complete — returns a new accessToken with updated claims
       const prefsRes = await api.patch('/auth/onboarding/prefs', {});
-      const newToken = prefsRes.data?.data?.accessToken;
-      if (newToken) {
-        localStorage.setItem('token', newToken);
-        document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
-      }
+      const newToken = prefsRes.data?.data?.accessToken || localStorage.getItem('token') || '';
+      
+      localStorage.setItem('token', newToken);
+      document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
 
       dispatch(updateOnboardingStatus(true));
+      
+      if (newToken && user) {
+        dispatch(setCredentials({
+          user,
+          accessToken: newToken,
+          isOnboardingComplete: true,
+          permissions: user.permissions
+        }));
+      }
+
       setIsCompleted(true);
       toast.success('Onboarding complete!');
     } catch (error: any) {

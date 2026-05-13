@@ -45,7 +45,7 @@ import {
 const businessSchema = z.object({
   companyName: z.string().min(2, 'Company name is required'),
   businessType: z.string().min(1, 'Business type is required'),
-  ein: z.string().regex(/^\d{2}-\d{7}$/, 'EIN must be XX-XXXXXXX'),
+  ein: z.string().regex(/^\d{2}-?\d{7}$/, 'EIN must be 9 digits (XX-XXXXXXX)'),
   street: z.string().min(1, 'Street address is required'),
   city: z.string().min(1, 'City is required'),
   state: z.string().length(2, 'Use 2-letter state code'),
@@ -148,7 +148,8 @@ export default function BrokerOnboardingPage() {
       const valid = await businessForm.trigger();
       if (!valid) {
         scrollToFirstError('step1-form');
-        toast.error('Please complete the business profile');
+        const firstErr = Object.values(businessForm.formState.errors)[0]?.message;
+        toast.error(firstErr || 'Please complete the business profile');
         return;
       }
       setStep(2);
@@ -254,10 +255,23 @@ export default function BrokerOnboardingPage() {
 
       const prefsRes = await api.patch('/auth/onboarding/prefs', {});
       const newToken = prefsRes.data?.data?.accessToken || localStorage.getItem('token') || '';
+      
+      // Update global storage
       localStorage.setItem('token', newToken);
       document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
 
+      // Update Redux state with full credentials to ensure seamless transition
       dispatch(updateOnboardingStatus(true));
+      if (newToken && user) {
+        // We setCredentials to update the token in Redux, preventing stale 403s on next navigation
+        dispatch(setCredentials({
+          user,
+          accessToken: newToken,
+          isOnboardingComplete: true,
+          permissions: user.permissions
+        }));
+      }
+
       setIsCompleted(true);
     } catch (error: unknown) {
       console.error('[BROKER ONBOARDING] Error:', error);
@@ -412,25 +426,28 @@ export default function BrokerOnboardingPage() {
                     )}
                     placeholder="100 West Washington St."
                   />
+                  {businessForm.formState.errors.street && (
+                    <p className="text-[10px] text-error font-bold mt-1 ml-1 uppercase">{businessForm.formState.errors.street.message}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-1 space-y-2">
+                  <div className="col-span-1 space-y-2" data-error={!!businessForm.formState.errors.city}>
                     <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">City</label>
-                    <input {...businessForm.register('city')} className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm" placeholder="Chicago" />
+                    <input {...businessForm.register('city')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm", businessForm.formState.errors.city ? "border-error" : "border-hairline")} placeholder="Chicago" />
                   </div>
-                  <div className="space-y-2 relative">
+                  <div className="space-y-2 relative" data-error={!!businessForm.formState.errors.state}>
                     <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">State</label>
                     <div className="relative">
-                      <select {...businessForm.register('state')} className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium shadow-sm focus:border-ink">
+                      <select {...businessForm.register('state')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium shadow-sm focus:border-ink", businessForm.formState.errors.state ? "border-error" : "border-hairline")}>
                         {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                       <CaretDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2" data-error={!!businessForm.formState.errors.zip}>
                     <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">ZIP</label>
-                    <input {...businessForm.register('zip')} className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm" placeholder="60601" />
+                    <input {...businessForm.register('zip')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm", businessForm.formState.errors.zip ? "border-error" : "border-hairline")} placeholder="60601" />
                   </div>
                 </div>
 
@@ -438,6 +455,9 @@ export default function BrokerOnboardingPage() {
                 <div className="space-y-2" data-error={!!businessForm.formState.errors.phone}>
                   <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">Business Phone</label>
                   <input {...businessForm.register('phone')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm", businessForm.formState.errors.phone ? "border-error" : "border-hairline")} placeholder="+1 (312) 555-0123" />
+                  {businessForm.formState.errors.phone && (
+                    <p className="text-[10px] text-error font-bold mt-1 ml-1 uppercase">{businessForm.formState.errors.phone.message}</p>
+                  )}
                 </div>
 
                 {/* Logo Upload */}
