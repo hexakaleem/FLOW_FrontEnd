@@ -482,7 +482,12 @@ export default function CreateLoadPage() {
       toast.success("Load saved as draft!");
       router.push("/loads");
     } catch (err: any) {
-      const msg = err?.response?.data?.error?.message || "Failed to save draft";
+      const errorData = err?.response?.data?.error;
+      let msg = errorData?.message || "Failed to save draft";
+      if (errorData?.code === 'VALIDATION_ERROR' && errorData?.details?.fields) {
+        const fields = Object.values(errorData.details.fields).join(', ');
+        if (fields) msg = fields;
+      }
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -519,7 +524,12 @@ export default function CreateLoadPage() {
       toast.success("Load posted successfully!");
       router.push("/loads");
     } catch (err: any) {
-      const msg = err?.response?.data?.error?.message || "Failed to post load";
+      const errorData = err?.response?.data?.error;
+      let msg = errorData?.message || "Failed to post load";
+      if (errorData?.code === 'VALIDATION_ERROR' && errorData?.details?.fields) {
+        const fields = Object.values(errorData.details.fields).join(', ');
+        if (fields) msg = fields;
+      }
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -764,12 +774,12 @@ export default function CreateLoadPage() {
                 </button>
               </div>
 
-              <div className="space-y-2">
-                <label className="ml-1  font-semibold  text-muted">
+              <div className="space-y-1">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Load Title / Reference
                 </label>
                 <input
-                  className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                  className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                   placeholder="e.g., Produce shipment to Dallas"
                   value={form.title}
                   onChange={(e) => update("title", e.target.value)}
@@ -777,8 +787,8 @@ export default function CreateLoadPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
+                <div className="space-y-1">
+                  <label className="ml-1 text-xs font-semibold text-muted">
                     Load Category
                   </label>
                   <div className="flex gap-2">
@@ -798,12 +808,12 @@ export default function CreateLoadPage() {
                     ))}
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
+                <div className="space-y-1">
+                  <label className="ml-1 text-xs font-semibold text-muted">
                     Equipment Type
                   </label>
                   <select
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none appearance-none cursor-pointer"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none appearance-none cursor-pointer"
                     value={form.equipmentType}
                     onChange={(e) => update("equipmentType", e.target.value)}
                   >
@@ -815,12 +825,12 @@ export default function CreateLoadPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
+                <div className="space-y-1">
+                  <label className="ml-1 text-xs font-semibold text-muted">
                     Commodity Type
                   </label>
                   <select
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none appearance-none cursor-pointer"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none appearance-none cursor-pointer"
                     value={form.commodity}
                     onChange={(e) => update("commodity", e.target.value)}
                   >
@@ -829,13 +839,13 @@ export default function CreateLoadPage() {
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
+                <div className="space-y-1">
+                  <label className="ml-1 text-xs font-semibold text-muted">
                     Total Weight (lbs)
                   </label>
                   <input
                     type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="e.g., 42000"
                     value={form.weight}
                     onChange={(e) => update("weight", e.target.value)}
@@ -844,7 +854,7 @@ export default function CreateLoadPage() {
               </div>
 
               <div className="space-y-3">
-                <label className="ml-1  font-semibold  text-muted">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Special Requirements
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -878,29 +888,29 @@ export default function CreateLoadPage() {
                   Shipper Contact
                 </h4>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <label className="ml-1 font-semibold text-muted">Name</label>
+                  <div className="space-y-1">
+                    <label className="ml-1 text-xs font-semibold text-muted">Name</label>
                     <input
-                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                       placeholder="Shipper name"
                       value={form.shipperName}
                       onChange={(e) => update("shipperName", e.target.value)}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="ml-1 font-semibold text-muted">Phone</label>
+                  <div className="space-y-1">
+                    <label className="ml-1 text-xs font-semibold text-muted">Phone</label>
                     <input
-                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                       placeholder="(555) 555-5555"
                       value={form.shipperPhone}
                       onChange={(e) => update("shipperPhone", e.target.value)}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="ml-1 font-semibold text-muted">Email</label>
+                  <div className="space-y-1">
+                    <label className="ml-1 text-xs font-semibold text-muted">Email</label>
                     <input
                       type="email"
-                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                       placeholder="shipper@company.com"
                       value={form.shipperEmail}
                       onChange={(e) => update("shipperEmail", e.target.value)}
@@ -937,19 +947,19 @@ export default function CreateLoadPage() {
                 />
                 <div className="grid grid-cols-3 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="City"
                     value={form.originCity}
                     onChange={(e) => update("originCity", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="State"
                     value={form.originState}
                     onChange={(e) => update("originState", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="ZIP"
                     value={form.originZip}
                     onChange={(e) => update("originZip", e.target.value)}
@@ -957,7 +967,7 @@ export default function CreateLoadPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="Contact name"
                     value={form.originContactName}
                     onChange={(e) =>
@@ -965,7 +975,7 @@ export default function CreateLoadPage() {
                     }
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="Contact phone"
                     value={form.originContactPhone}
                     onChange={(e) =>
@@ -981,7 +991,7 @@ export default function CreateLoadPage() {
                     />
                     <input
                       type="date"
-                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-bold outline-none cursor-pointer"
+                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-medium outline-none cursor-pointer"
                       value={form.pickupDate}
                       onChange={(e) => update("pickupDate", e.target.value)}
                     />
@@ -993,7 +1003,7 @@ export default function CreateLoadPage() {
                     />
                     <input
                       type="time"
-                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-bold outline-none cursor-pointer"
+                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-medium outline-none cursor-pointer"
                       value={form.pickupTime}
                       onChange={(e) => update("pickupTime", e.target.value)}
                     />
@@ -1020,19 +1030,19 @@ export default function CreateLoadPage() {
                 />
                 <div className="grid grid-cols-3 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="City"
                     value={form.destCity}
                     onChange={(e) => update("destCity", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="State"
                     value={form.destState}
                     onChange={(e) => update("destState", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="ZIP"
                     value={form.destZip}
                     onChange={(e) => update("destZip", e.target.value)}
@@ -1040,13 +1050,13 @@ export default function CreateLoadPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="Contact name"
                     value={form.destContactName}
                     onChange={(e) => update("destContactName", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="Contact phone"
                     value={form.destContactPhone}
                     onChange={(e) => update("destContactPhone", e.target.value)}
@@ -1060,7 +1070,7 @@ export default function CreateLoadPage() {
                     />
                     <input
                       type="date"
-                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-bold outline-none cursor-pointer"
+                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-medium outline-none cursor-pointer"
                       value={form.deliveryDate}
                       onChange={(e) => update("deliveryDate", e.target.value)}
                     />
@@ -1072,7 +1082,7 @@ export default function CreateLoadPage() {
                     />
                     <input
                       type="time"
-                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-bold outline-none cursor-pointer"
+                      className="w-full rounded-md border border-hairline bg-surface-soft pl-12 pr-5 py-4 text-sm font-medium outline-none cursor-pointer"
                       value={form.deliveryTime}
                       onChange={(e) => update("deliveryTime", e.target.value)}
                     />
@@ -1116,8 +1126,8 @@ export default function CreateLoadPage() {
               </h3>
 
               {/* Rate type */}
-              <div className="space-y-2">
-                <label className="ml-1  font-semibold  text-muted">
+              <div className="space-y-1">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Rate Type
                 </label>
                 <div className="flex gap-3">
@@ -1139,8 +1149,8 @@ export default function CreateLoadPage() {
               </div>
 
               {/* Rate amount */}
-              <div className="space-y-2">
-                <label className="ml-1  font-semibold  text-muted">
+              <div className="space-y-1">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Rate Amount ($)
                 </label>
                 <input
@@ -1201,25 +1211,25 @@ export default function CreateLoadPage() {
               </h3>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
+                <div className="space-y-1">
+                  <label className="ml-1 text-xs font-semibold text-muted">
                     Trailer Length (ft)
                   </label>
                   <input
                     type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="e.g., 53"
                     value={form.trailerLength}
                     onChange={(e) => update("trailerLength", e.target.value)}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="ml-1  font-semibold  text-muted">
+                <div className="space-y-1">
+                  <label className="ml-1 text-xs font-semibold text-muted">
                     Max Weight (lbs)
                   </label>
                   <input
                     type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all"
                     placeholder="e.g., 45000"
                     value={form.weightLimit}
                     onChange={(e) => update("weightLimit", e.target.value)}
@@ -1228,8 +1238,8 @@ export default function CreateLoadPage() {
               </div>
 
               {/* Condition toggles */}
-              <div className="space-y-2">
-                <label className="ml-1  font-semibold  text-muted">
+              <div className="space-y-1">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Condition Flags
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -1274,7 +1284,7 @@ export default function CreateLoadPage() {
 
               {/* Required documents */}
               <div className="space-y-3">
-                <label className="ml-1  font-semibold  text-muted">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Required Documents
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -1311,8 +1321,8 @@ export default function CreateLoadPage() {
               </div>
 
               {/* Notes */}
-              <div className="space-y-2">
-                <label className="ml-1  font-semibold  text-muted">
+              <div className="space-y-1">
+                <label className="ml-1 text-xs font-semibold text-muted">
                   Notes to Carrier
                 </label>
                 <textarea
