@@ -25,6 +25,7 @@ import api from "@/lib/axios";
 import { toast } from "sonner";
 import { useAppSelector } from "@/store/hooks";
 import PermissionGate from "@/components/PermissionGate";
+import { LocationAutocomplete } from "@/components/ui/LocationAutocomplete";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -218,6 +219,34 @@ export default function CreateLoadPage() {
 
   const update = <K extends keyof FormData>(key: K, value: FormData[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleOriginPlaceSelect = (place: any) => {
+    const city = place.address?.city || place.address?.town || place.address?.village || "";
+    const state = place.address?.state || "";
+    const zip = place.address?.postcode || "";
+    const road = place.address?.road || "";
+    setForm((prev) => ({
+      ...prev,
+      originAddress: road || place.display_name.split(",")[0],
+      originCity: city,
+      originState: state,
+      originZip: zip,
+    }));
+  };
+
+  const handleDestPlaceSelect = (place: any) => {
+    const city = place.address?.city || place.address?.town || place.address?.village || "";
+    const state = place.address?.state || "";
+    const zip = place.address?.postcode || "";
+    const road = place.address?.road || "";
+    setForm((prev) => ({
+      ...prev,
+      destAddress: road || place.display_name.split(",")[0],
+      destCity: city,
+      destState: state,
+      destZip: zip,
+    }));
   };
 
   const toggleArray = (arr: string[], item: string) => {
@@ -633,11 +662,12 @@ export default function CreateLoadPage() {
                     Pickup Location
                   </h3>
                 </div>
-                <input
-                  className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
-                  placeholder="Street address"
+                <LocationAutocomplete
                   value={form.originAddress}
-                  onChange={(e) => update("originAddress", e.target.value)}
+                  onChange={(val) => update("originAddress", val)}
+                  onPlaceSelect={handleOriginPlaceSelect}
+                  placeholder="Search pickup address..."
+                  className="w-full"
                 />
                 <div className="grid grid-cols-3 gap-4">
                   <input
@@ -715,11 +745,12 @@ export default function CreateLoadPage() {
                     Delivery Location
                   </h3>
                 </div>
-                <input
-                  className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
-                  placeholder="Street address"
+                <LocationAutocomplete
                   value={form.destAddress}
-                  onChange={(e) => update("destAddress", e.target.value)}
+                  onChange={(val) => update("destAddress", val)}
+                  onPlaceSelect={handleDestPlaceSelect}
+                  placeholder="Search delivery address..."
+                  className="w-full"
                 />
                 <div className="grid grid-cols-3 gap-4">
                   <input

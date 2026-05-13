@@ -9,6 +9,7 @@ import { useAppSelector } from "@/store/hooks";
 const ROLE_ALLOWED_PATHS: Record<string, string[]> = {
   "/loads": ["broker"],
   "/loads/create": ["broker"],
+  "/freight-history": ["broker"],
   "/fleet": ["carrier", "independent_driver", "company_driver"],
   "/fleet/add": ["carrier", "independent_driver"],
   "/team": ["carrier"],
@@ -17,7 +18,7 @@ const ROLE_ALLOWED_PATHS: Record<string, string[]> = {
   "/admin": ["admin"],
   "/analytics": ["carrier"],
   "/payments": ["broker", "carrier"],
-  "/my-bookings": ["broker", "carrier", "independent_driver", "company_driver"],
+  "/my-bookings": ["carrier", "independent_driver", "company_driver"],
   "/documents": ["carrier", "independent_driver", "company_driver"],
   "/notifications": [
     "broker",

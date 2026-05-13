@@ -6,6 +6,7 @@ import {
   ArrowsLeftRight,
   ArrowClockwise,
 } from "@phosphor-icons/react";
+import { LocationAutocomplete } from "@/components/ui/LocationAutocomplete";
 
 interface MarketplaceFiltersProps {
   onSearch: (filters: any) => void;
@@ -62,19 +63,16 @@ export function MarketplaceFilters({ onSearch, isLoading }: MarketplaceFiltersPr
             <label className="text-[12px] font-semibold text-muted uppercase tracking-wider mb-1.5 block">
               Origin
             </label>
-            <input
-              type="text"
-              placeholder="City or State"
+            <LocationAutocomplete
               value={filters.origin}
-              onChange={(e) => handleInputChange("origin", e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full h-11 px-4 bg-canvas border border-hairline rounded-lg text-[15px] text-ink outline-none placeholder:text-muted/40 focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+              onChange={(val) => handleInputChange("origin", val)}
+              placeholder="Search origin city or address..."
             />
           </div>
 
           <button
             onClick={handleSwap}
-            className="flex items-center justify-center h-11 w-11 rounded-lg border border-hairline bg-canvas text-primary hover:bg-surface-soft transition-colors shrink-0"
+            className="flex items-center justify-center h-11 w-11 rounded-lg border border-hairline bg-canvas text-primary hover:bg-surface-soft transition-colors shrink-0 mb-0.5"
             title="Swap origin and destination"
           >
             <ArrowsLeftRight size={20} weight="bold" />
@@ -84,13 +82,10 @@ export function MarketplaceFilters({ onSearch, isLoading }: MarketplaceFiltersPr
             <label className="text-[12px] font-semibold text-muted uppercase tracking-wider mb-1.5 block">
               Destination
             </label>
-            <input
-              type="text"
-              placeholder="City or State"
+            <LocationAutocomplete
               value={filters.destination}
-              onChange={(e) => handleInputChange("destination", e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="w-full h-11 px-4 bg-canvas border border-hairline rounded-lg text-[15px] text-ink outline-none placeholder:text-muted/40 focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
+              onChange={(val) => handleInputChange("destination", val)}
+              placeholder="Search destination city or address..."
             />
           </div>
         </div>
