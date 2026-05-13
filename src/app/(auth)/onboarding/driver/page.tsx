@@ -90,15 +90,8 @@ export default function DriverOnboardingPage() {
 
       await api.patch('/auth/onboarding/business', {});
       await api.patch('/auth/onboarding/stripe', {});
-      await api.patch('/auth/onboarding/prefs', {});
-
-      let newToken = localStorage.getItem('token') || '';
-      try {
-        const refreshRes = await api.post('/auth/refresh');
-        newToken = refreshRes.data.data.accessToken || newToken;
-      } catch {
-        // ignore
-      }
+      const prefsRes = await api.patch('/auth/onboarding/prefs', {});
+      const newToken = prefsRes.data?.data?.accessToken || localStorage.getItem('token') || '';
       localStorage.setItem('token', newToken);
       document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
 

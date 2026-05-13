@@ -106,13 +106,18 @@ export function Sidebar() {
   });
 
   return (
-    <aside className="fixed top-0 left-0 bottom-0 z-50 flex w-[240px] flex-col border-r border-hairline bg-sidebar">
-      <div className="px-6 py-5">
+    <aside className="fixed top-0 left-0 bottom-0 z-50 flex w-[240px] flex-col border-r border-hairline bg-sidebar shadow-2xl">
+      <div className="px-6 py-6">
         <Link
           href="/dashboard"
-          className="text-xl font-semibold tracking-tight text-ink transition-all hover:opacity-80 inline-block"
+          className="flex items-center gap-2 group"
         >
-          FLOW
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-dat-blue text-white font-bold text-lg">
+            F
+          </div>
+          <span className="text-xl font-bold tracking-tighter text-white">
+            FLOW<span className="text-dat-blue">ONE</span>
+          </span>
         </Link>
       </div>
 
@@ -126,19 +131,19 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "group flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] font-medium transition-all",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-ink",
+                  ? "bg-dat-blue text-white shadow-lg shadow-dat-blue/20"
+                  : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-white",
               )}
             >
               <Icon
-                size={20}
+                size={18}
                 weight={isActive ? "bold" : "regular"}
                 className={cn(
                   isActive
-                    ? "text-primary-foreground"
-                    : "text-muted group-hover:text-ink",
+                    ? "text-white"
+                    : "text-sidebar-foreground group-hover:text-white",
                 )}
               />
               {label}

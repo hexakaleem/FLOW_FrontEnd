@@ -50,12 +50,14 @@
   --color-badge-violet: #8b5cf6;
   --color-badge-emerald: #34d399;
 
-  /* Sidebar / Shell */
+  /* Shell / Shell */
   --color-sidebar: var(--sidebar);
   --color-sidebar-hover: var(--sidebar-hover);
   --color-sidebar-active: var(--sidebar-active);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-topbar: var(--topbar);
+  --color-dat-blue: #0040c1;
+  --color-dat-blue-hover: #0036a3;
 
   /* Typography */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -163,11 +165,11 @@
   --body-text: #a1a1aa;
   --on-dark-soft: #6b7280;
 
-  --sidebar: #101010;
-  --sidebar-hover: #1a1a1a;
+  --sidebar: #0a0c12;
+  --sidebar-hover: #161a25;
   --sidebar-active: #ffffff;
-  --sidebar-foreground: #a1a1aa;
-  --topbar: #101010;
+  --sidebar-foreground: #94a3b8;
+  --topbar: #0a0c12;
 }
 
 @layer base {

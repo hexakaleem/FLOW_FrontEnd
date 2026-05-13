@@ -48,7 +48,18 @@ export default function BusinessStep() {
   async function onSubmit(data: BusinessValues) {
     setIsLoading(true);
     try {
-      await api.patch('/auth/onboarding/business', data);
+      await api.patch('/auth/onboarding/business', {
+        companyName: data.companyName,
+        mcNumber: data.mcNumber,
+        dotNumber: data.dotNumber,
+        address: {
+          line1: data.address,
+          line2: '',
+          city: '',
+          state: '',
+          zip: '',
+        },
+      });
       toast.success('Business details saved!');
       router.push('/onboarding/stripe');
     } catch (error: any) {

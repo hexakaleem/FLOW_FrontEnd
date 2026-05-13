@@ -122,7 +122,7 @@ export default function BrokerOnboardingPage() {
 
       // 2. Save business profile to real backend
       if (user?.id) {
-        await api.post(`/api/users/${user.id}/business-profile`, {
+        await api.post(`/users/${user.id}/business-profile`, {
           companyName: businessData.companyName,
           mcNumber: authorityData.mcNumber,
           dotNumber: '',
@@ -142,17 +142,9 @@ export default function BrokerOnboardingPage() {
       // 4. Mark stripe step complete
       await api.patch('/auth/onboarding/stripe', { stripeConnected: true });
 
-      // 5. Mark prefs step complete
-      await api.patch('/auth/onboarding/prefs', {});
-
-      // Get fresh access token with updated isOnboardingComplete claim
-      let newToken = localStorage.getItem('token') || '';
-      try {
-        const refreshRes = await api.post('/auth/refresh');
-        newToken = refreshRes.data.data.accessToken || newToken;
-      } catch {
-        // Refresh token may have been cleared — use existing token
-      }
+      // 5. Mark prefs step complete — returns a new accessToken with updated claims
+      const prefsRes = await api.patch('/auth/onboarding/prefs', {});
+      const newToken = prefsRes.data?.data?.accessToken || localStorage.getItem('token') || '';
       localStorage.setItem('token', newToken);
       document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
 

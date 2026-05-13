@@ -128,7 +128,7 @@ export default function CarrierOnboardingPage() {
 
       // 2. Save business profile to real backend
       if (user?.id) {
-        await api.post(`/api/users/${user.id}/business-profile`, {
+        await api.post(`/users/${user.id}/business-profile`, {
           companyName: companyData.companyName,
           mcNumber: fmcsaData.mcNumber,
           dotNumber: '',
@@ -148,14 +148,13 @@ export default function CarrierOnboardingPage() {
       // 4. Mark stripe step complete
       await api.patch('/auth/onboarding/stripe', { stripeConnected: true });
 
-      // 5. Mark prefs step complete
-      await api.patch('/auth/onboarding/prefs', {});
-
-      // Refresh token to get updated JWT claims (isOnboardingComplete: true)
-      const refreshRes = await api.post('/auth/refresh');
-      const { accessToken: newToken } = refreshRes.data.data;
-      localStorage.setItem('token', newToken);
-      document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
+      // 5. Mark prefs step complete — returns a new accessToken with updated claims
+      const prefsRes = await api.patch('/auth/onboarding/prefs', {});
+      const newToken = prefsRes.data?.data?.accessToken;
+      if (newToken) {
+        localStorage.setItem('token', newToken);
+        document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
+      }
 
       dispatch(updateOnboardingStatus(true));
       setIsCompleted(true);
