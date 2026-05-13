@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -213,6 +213,12 @@ export default function CreateLoadPage() {
   const [form, setForm] = useState<FormData>(INITIAL_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingAi, setIsFetchingAi] = useState(false);
+  const [aiMode, setAiMode] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ role: "ai" | "user"; text: string }[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [aiStep, setAiStep] = useState(0);
+  const [aiCollected, setAiCollected] = useState<Partial<FormData>>({});
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // -----------------------------------------------------------------------
   // Field helpers
@@ -253,6 +259,107 @@ export default function CreateLoadPage() {
   const toggleArray = (arr: string[], item: string) => {
     return arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
   };
+
+  // -----------------------------------------------------------------------
+  // AI Chat Assistant
+  // -----------------------------------------------------------------------
+
+  const AI_QUESTIONS = [
+    { key: "title", prompt: "What's a short title or reference for this load? (e.g., 'Produce to Dallas')", parse: (v: string) => ({ title: v }) },
+    { key: "commodity", prompt: "What commodity are you shipping?", parse: (v: string) => ({ commodity: v }) },
+    { key: "equipmentType", prompt: "What equipment type is needed? (Flatbed, Dry Van, Reefer, Step Deck, Lowboy, Tanker)", parse: (v: string) => ({ equipmentType: v }) },
+    { key: "weight", prompt: "What's the total weight in lbs?", parse: (v: string) => ({ weight: v.replace(/[^0-9]/g, "") }) },
+    { key: "category", prompt: "Is this Full Truckload or LTL?", parse: (v: string) => ({ category: v.toLowerCase().includes("ltl") ? "LTL" : "Full Truckload" }) },
+    { key: "origin", prompt: "Where is the pickup location? (City, State)", parse: (v: string) => {
+      const parts = v.split(",").map(s => s.trim());
+      return { originCity: parts[0] || "", originState: (parts[1] || "").toUpperCase().slice(0, 2) };
+    }},
+    { key: "dest", prompt: "Where is the delivery location? (City, State)", parse: (v: string) => {
+      const parts = v.split(",").map(s => s.trim());
+      return { destCity: parts[0] || "", destState: (parts[1] || "").toUpperCase().slice(0, 2) };
+    }},
+    { key: "pickupDate", prompt: "What's the pickup date? (e.g., 2025-01-15)", parse: (v: string) => ({ pickupDate: v }) },
+    { key: "deliveryDate", prompt: "What's the delivery date? (e.g., 2025-01-18)", parse: (v: string) => ({ deliveryDate: v }) },
+    { key: "rate", prompt: "What rate are you offering? (just the number, e.g., 2500)", parse: (v: string) => ({ rate: v.replace(/[^0-9.]/g, "") }) },
+    { key: "rateType", prompt: "Is this a Flat Rate or Per Mile rate?", parse: (v: string) => ({ rateType: v.toLowerCase().includes("mile") ? "per_mile" : "flat" }) },
+    { key: "notes", prompt: "Any special notes for the carrier? (type 'skip' to leave blank)", parse: (v: string) => ({ notesToCarrier: v.toLowerCase() === "skip" ? "" : v }) },
+  ];
+
+  const startAiChat = () => {
+    setAiMode(true);
+    setAiStep(0);
+    setAiCollected({});
+    setChatMessages([{ role: "ai", text: "Hi! I'll help you create a load. Let's go step by step.\n\nWhat's a short title or reference for this load? (e.g., 'Produce to Dallas')" }]);
+  };
+
+  const exitAiChat = () => {
+    setAiMode(false);
+    setChatMessages([]);
+    setAiStep(0);
+    setAiCollected({});
+  };
+
+  const sendChatMessage = () => {
+    if (!chatInput.trim()) return;
+    const userMsg = chatInput.trim();
+    setChatMessages(prev => [...prev, { role: "user", text: userMsg }]);
+    setChatInput("");
+
+    const currentQ = AI_QUESTIONS[aiStep];
+    if (!currentQ) return;
+
+    const parsed = currentQ.parse(userMsg);
+    setAiCollected(prev => ({ ...prev, ...parsed }));
+
+    const nextStep = aiStep + 1;
+    setAiStep(nextStep);
+
+    if (nextStep < AI_QUESTIONS.length) {
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, { role: "ai", text: AI_QUESTIONS[nextStep].prompt }]);
+      }, 500);
+    } else {
+      setTimeout(() => {
+        const summary = Object.entries(parsed)
+          .filter(([k]) => k !== "notes" || parsed.notesToCarrier)
+          .map(([k, v]) => {
+            const label = k.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase());
+            return `• ${label}: ${v}`;
+          })
+          .join("\n");
+        setChatMessages(prev => [...prev, {
+          role: "ai",
+          text: `Great! Here's a summary of your load:\n\n${summary}\n\nType "confirm" to create this load, or "edit" to start over.`
+        }]);
+      }, 500);
+    }
+  };
+
+  const confirmAiLoad = () => {
+    setForm(prev => ({ ...prev, ...aiCollected }));
+    setAiMode(false);
+    setChatMessages([]);
+    setAiStep(0);
+    setAiCollected({});
+    toast.success("Load details filled! Review and post.");
+  };
+
+  const handleAiChatInput = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (chatInput.trim().toLowerCase() === "confirm" && aiStep >= AI_QUESTIONS.length) {
+        confirmAiLoad();
+      } else if (chatInput.trim().toLowerCase() === "edit" && aiStep >= AI_QUESTIONS.length) {
+        startAiChat();
+      } else {
+        sendChatMessage();
+      }
+    }
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   // -----------------------------------------------------------------------
   // AI pricing suggestion (mocked from backend trends)
