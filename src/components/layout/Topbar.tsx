@@ -82,14 +82,12 @@ export function Topbar() {
 
           {/* User Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <button className="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-surface-soft">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
-                  {user?.firstName?.slice(0, 1)}
-                  {user?.lastName?.slice(0, 1)}
-                </div>
-                <CaretDown size={14} weight="regular" className="text-muted" />
-              </button>
+            <DropdownMenuTrigger className="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-surface-soft outline-none">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                {user?.firstName?.slice(0, 1)}
+                {user?.lastName?.slice(0, 1)}
+              </div>
+              <CaretDown size={14} weight="regular" className="text-muted" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={8} className="w-56">
               <DropdownMenuLabel className="font-normal">
@@ -109,7 +107,7 @@ export function Topbar() {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => window.location.href = "/profile"}
+                onClick={() => window.location.href = "/settings"}
                 className="cursor-pointer"
               >
                 <User size={16} weight="regular" />

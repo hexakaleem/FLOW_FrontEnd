@@ -53,8 +53,15 @@ export default function DashboardLayout({
       return;
     }
 
+    // Admins are allowed everywhere
+    if (user.role === "admin") return;
+
     for (const [basePath, allowedRoles] of Object.entries(ROLE_ALLOWED_PATHS)) {
-      if (pathname.startsWith(basePath) && !allowedRoles.includes(user.role)) {
+      // Use exact match or startsWith with a trailing slash to prevent partial matches
+      // e.g. /teams shouldn't match /team if /teams is not in the list
+      const isMatch = pathname === basePath || pathname.startsWith(basePath + "/");
+      if (isMatch && !allowedRoles.includes(user.role)) {
+        console.warn(`[AUTH] Access denied to ${pathname} for role ${user.role}`);
         router.replace("/dashboard");
         return;
       }
