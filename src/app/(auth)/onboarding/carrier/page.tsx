@@ -254,7 +254,7 @@ export default function CarrierOnboardingPage() {
 
             <div className="grid gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted">Company Name</label>
+                <label className="text-xs font-medium text-muted">Company Name <span className="text-danger">*</span></label>
                 <input
                   {...companyForm.register('companyName')}
                   className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", companyForm.formState.errors.companyName && "border-danger")}
@@ -264,7 +264,7 @@ export default function CarrierOnboardingPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted">Business Type</label>
+                  <label className="text-xs font-medium text-muted">Business Type <span className="text-danger">*</span></label>
                   <select
                     {...companyForm.register('businessType')}
                     className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium focus:border-primary"
@@ -276,7 +276,7 @@ export default function CarrierOnboardingPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted">EIN (Employer Identification Number)</label>
+                  <label className="text-xs font-medium text-muted">EIN (Employer Identification Number) <span className="text-danger">*</span></label>
                   <input
                     {...companyForm.register('ein')}
                     className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", companyForm.formState.errors.ein && "border-danger")}
@@ -286,7 +286,7 @@ export default function CarrierOnboardingPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted">Street Address</label>
+                <label className="text-xs font-medium text-muted">Street Address <span className="text-danger">*</span></label>
                 <input
                   {...companyForm.register('street')}
                   className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", companyForm.formState.errors.street && "border-danger")}
@@ -296,7 +296,7 @@ export default function CarrierOnboardingPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted">City</label>
+                  <label className="text-xs font-medium text-muted">City <span className="text-danger">*</span></label>
                   <input
                     {...companyForm.register('city')}
                     className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", companyForm.formState.errors.city && "border-danger")}
@@ -304,7 +304,7 @@ export default function CarrierOnboardingPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted">State</label>
+                  <label className="text-xs font-medium text-muted">State <span className="text-danger">*</span></label>
                   <select
                     {...companyForm.register('state')}
                     className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium focus:border-primary"
@@ -313,7 +313,7 @@ export default function CarrierOnboardingPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-muted">ZIP</label>
+                  <label className="text-xs font-medium text-muted">ZIP <span className="text-danger">*</span></label>
                   <input
                     {...companyForm.register('zip')}
                     className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", companyForm.formState.errors.zip && "border-danger")}
@@ -323,7 +323,7 @@ export default function CarrierOnboardingPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted">Business Phone</label>
+                <label className="text-xs font-medium text-muted">Business Phone <span className="text-danger">*</span></label>
                 <input
                   {...companyForm.register('phone')}
                   className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", companyForm.formState.errors.phone && "border-danger")}
@@ -354,7 +354,7 @@ export default function CarrierOnboardingPage() {
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted">MC Number</label>
+                <label className="text-xs font-medium text-muted">MC Number <span className="text-danger">*</span></label>
                 <input
                   {...fmcsaForm.register('mcNumber')}
                   className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", fmcsaForm.formState.errors.mcNumber && "border-danger")}

@@ -173,7 +173,7 @@ export default function AddVehiclePage() {
       vin: vin.trim().toUpperCase(),
       plateNumber,
       plateState,
-      internalId,
+      internalId: internalId.trim() || `TRK-${Date.now()}`,
       type: equipmentType,
       year: Number(year),
       make,

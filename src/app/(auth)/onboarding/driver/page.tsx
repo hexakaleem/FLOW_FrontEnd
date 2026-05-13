@@ -193,7 +193,7 @@ export default function DriverOnboardingPage() {
 
             <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted">MC Number or USDOT Number</label>
+                <label className="text-xs font-medium text-muted">MC Number or USDOT Number <span className="text-danger">*</span></label>
                 <div className="relative">
                   <IdentificationBadge size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                   <input

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
 import { LoadTableRow } from "@/components/marketplace/LoadTableRow";
 import { LoadExpandedDetails } from "@/components/marketplace/LoadExpandedDetails";
+import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
 import {
   Dialog,
@@ -141,11 +142,13 @@ export default function MarketplacePage() {
           }
 
           // Auto-select for independent driver
-          if (isIndependentDriver && truckList.length > 0) {
+          if (truckList.length === 1) {
             const firstTruckId = truckList[0]._id || truckList[0].id;
-            if (firstTruckId) {
+            if (firstTruckId && firstTruckId !== 'undefined') {
               setBookingTruckId(firstTruckId);
             }
+          }
+          if (isIndependentDriver) {
             setBookingDriverId(user?.id || "");
           }
         } catch (err) {
@@ -170,8 +173,8 @@ export default function MarketplacePage() {
     if (!bookingLoadId) return;
     try {
       const body: Record<string, string> = {};
-      if (!bookingTruckId) {
-        toast.error("Please select a truck");
+      if (!bookingTruckId || bookingTruckId === 'undefined') {
+        toast.error("Please select a valid truck");
         return;
       }
       if (!bookingDriverId && !isIndependentDriver) {
@@ -314,7 +317,9 @@ export default function MarketplacePage() {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted uppercase tracking-wider">Select Truck</label>
+              <label className="text-sm font-bold text-ink flex items-center gap-1">
+                Select Truck <span className="text-error">*</span>
+              </label>
               <select
                 className="w-full h-10 rounded-md border border-hairline bg-surface-soft px-3 text-sm font-medium outline-none focus:border-primary transition-all"
                 value={bookingTruckId}
@@ -330,11 +335,18 @@ export default function MarketplacePage() {
                   );
                 })}
               </select>
+              {trucks.length === 0 && (
+                <p className="text-[11px] font-bold text-error bg-error/10 p-2 rounded mt-2">
+                  You have no trucks. Please <Link href="/fleet/add" className="underline">register a truck</Link> first.
+                </p>
+              )}
             </div>
 
             {isCarrier && (
               <div className="space-y-2">
-                <label className="text-[11px] font-bold text-muted uppercase tracking-wider">Assign Driver</label>
+                <label className="text-sm font-bold text-ink flex items-center gap-1">
+                  Assign Driver <span className="text-error">*</span>
+                </label>
                 <select
                   className="w-full h-10 rounded-md border border-hairline bg-surface-soft px-3 text-sm font-medium outline-none focus:border-primary transition-all"
                   value={bookingDriverId}
@@ -345,6 +357,11 @@ export default function MarketplacePage() {
                     <option key={d.userId} value={d.userId}>{d.profile.firstName} {d.profile.lastName}</option>
                   ))}
                 </select>
+                {drivers.length === 0 && (
+                  <p className="text-[11px] font-bold text-error bg-error/10 p-2 rounded mt-2">
+                    No drivers available. Please <Link href="/teams" className="underline">add a driver</Link> to your team.
+                  </p>
+                )}
               </div>
             )}
           </div>
