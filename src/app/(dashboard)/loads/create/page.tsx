@@ -196,11 +196,11 @@ const RATE_TYPES = [
 ];
 
 const STEPS = [
-  { num: 1, label: "Details", icon: Package },
-  { num: 2, label: "Route", icon: MapPinLine },
-  { num: 3, label: "Pricing", icon: CurrencyDollar },
-  { num: 4, label: "Requirements", icon: ListChecks },
-  { num: 5, label: "Review", icon: Eye },
+  { num: 1, label: "Details", subLabel: "Tell us about your load", icon: Package },
+  { num: 2, label: "Route", subLabel: "Where it's going", icon: MapPinLine },
+  { num: 3, label: "Pricing", subLabel: "Set your rate", icon: CurrencyDollar },
+  { num: 4, label: "Requirements", subLabel: "Load & carrier needs", icon: ListChecks },
+  { num: 5, label: "Review", subLabel: "Review & post", icon: Eye },
 ];
 
 // ---------------------------------------------------------------------------
@@ -429,6 +429,7 @@ export default function CreateLoadPage() {
 
   const buildPayload = (isPublic: boolean) => {
     return {
+      title: form.title || `Load from ${form.originCity} to ${form.destCity}`,
       shipperName: form.shipperName || "Shipper",
       shipperPhone: form.shipperPhone || "000-000-0000",
       shipperEmail: form.shipperEmail || "shipper@example.com",
@@ -448,8 +449,8 @@ export default function CreateLoadPage() {
         contactName: form.destContactName,
         contactPhone: form.destContactPhone,
       },
-      pickupDate: `${form.pickupDate}T${form.pickupTime}:00`,
-      deliveryDate: `${form.deliveryDate}T${form.deliveryTime}:00`,
+      pickupDate: form.pickupTime ? `${form.pickupDate}T${form.pickupTime}:00` : `${form.pickupDate}T08:00:00`,
+      deliveryDate: form.deliveryTime ? `${form.deliveryDate}T${form.deliveryTime}:00` : `${form.deliveryDate}T17:00:00`,
       weight: Number(form.weight),
       truckType: form.equipmentType,
       rate: Number(form.rate),
@@ -525,7 +526,37 @@ export default function CreateLoadPage() {
     }
   };
 
+  const validateCurrentStep = (): boolean => {
+    if (step === 1) {
+      if (!form.title) { toast.error("Please enter a Load Title"); return false; }
+      if (!form.weight || Number(form.weight) <= 0) { toast.error("Please enter a valid weight > 0"); return false; }
+      if (!form.equipmentType) { toast.error("Please select an equipment type"); return false; }
+    }
+    if (step === 2) {
+      if (!form.originCity || !form.originState || !form.destCity || !form.destState) {
+        toast.error("Please enter both pickup and delivery locations");
+        return false;
+      }
+      if (!form.pickupDate || !form.deliveryDate) {
+        toast.error("Please enter pickup and delivery dates");
+        return false;
+      }
+      const pDate = new Date(`${form.pickupDate}T${form.pickupTime || '08:00'}:00`);
+      const dDate = new Date(`${form.deliveryDate}T${form.deliveryTime || '17:00'}:00`);
+      if (pDate <= new Date()) { toast.error("Pickup date must be in the future"); return false; }
+      if (dDate <= pDate) { toast.error("Delivery date must be after pickup date"); return false; }
+    }
+    if (step === 3) {
+      if (!form.rate || Number(form.rate) <= 0) {
+        toast.error("Please enter a valid rate > 0");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleNext = () => {
+    if (!validateCurrentStep()) return;
     if (step === 3) fetchAiPricing();
     if (step < 5) setStep(step + 1);
   };
@@ -548,96 +579,81 @@ export default function CreateLoadPage() {
 
   return (
     <PermissionGate roles={["broker"]}>
-      <div className="max-w-[780px] mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="max-w-6xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => router.back()}
-            className="mb-4 inline-flex items-center gap-1.5  font-semibold  text-muted hover:text-ink transition-colors"
-          >
-            <ArrowLeft size={14} weight="bold" />
-            Back to Loads
-          </button>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">
-            Post a New Load
-          </h1>
-          <p className="text-sm font-bold text-muted  mt-1">
-            Fill in the details to reach carriers
-          </p>
-          <div className="mt-4 flex items-center gap-3">
+        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
             <button
-              onClick={() => !aiMode && setAiMode(false)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border",
-                !aiMode
-                  ? "bg-primary border-primary text-white shadow-sm"
-                  : "bg-card border-hairline text-muted hover:border-muted"
-              )}
+              onClick={() => router.back()}
+              className="mb-4 inline-flex items-center gap-1.5 font-semibold text-muted hover:text-ink transition-colors"
             >
-              <Package size={16} weight="bold" /> Manual Form
+              <ArrowLeft size={14} weight="bold" />
+              Back to Loads
             </button>
+            <h1 className="text-4xl font-semibold tracking-tight text-ink">
+              Post a New Load
+            </h1>
+            <p className="text-sm font-bold text-muted mt-1">
+              Fill in the details to reach verified carriers
+            </p>
+          </div>
+
+          {/* AI Box */}
+          <div className="flex items-center gap-4 p-4 bg-white border border-hairline rounded-xl shadow-sm">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkle size={20} weight="fill" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-ink">Let AI fill it. Paste raw information</p>
+              <p className="text-[11px] font-semibold text-muted">Paste text like pickup, delivery, weight, etc.</p>
+            </div>
             <button
               onClick={startAiChat}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border",
-                aiMode
-                  ? "bg-primary border-primary text-white shadow-sm"
-                  : "bg-card border-hairline text-muted hover:border-muted"
-              )}
+              className="ml-4 flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-all bg-primary/10 text-primary hover:bg-primary hover:text-white"
             >
-              <Robot size={16} weight="bold" /> AI Assistant
+              AI <Sparkle size={16} weight="bold" />
             </button>
           </div>
         </div>
 
-        {/* Step Indicator */}
-        <div className="mb-10 flex items-center justify-between">
-          {STEPS.map((s, i) => (
-            <div key={s.num} className="flex flex-1 items-center">
-              <div
-                className={cn(
-                  "flex flex-col items-center gap-2",
-                  step >= s.num ? "text-ink" : "text-muted",
-                )}
-              >
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl border-2 text-sm font-semibold transition-all",
-                    step === s.num
-                      ? "border-primary bg-primary text-white shadow-sm"
-                      : step > s.num
-                        ? "border-success bg-success text-white"
-                        : "border-hairline bg-card",
-                  )}
-                >
-                  {step > s.num ? (
-                    <Check size={20} weight="bold" />
-                  ) : (
-                    <s.icon
-                      size={20}
-                      weight={step === s.num ? "bold" : "regular"}
-                    />
-                  )}
+        <div className="flex gap-8 items-start">
+          {/* Sidebar */}
+          <div className="w-64 shrink-0 hidden md:flex flex-col relative">
+            {/* Connecting Line */}
+            <div className="absolute left-[1.125rem] top-8 bottom-8 w-[2px] bg-border -z-10" />
+            
+            {STEPS.map((s, i) => {
+              const isActive = step === s.num;
+              const isPast = step > s.num;
+              
+              return (
+                <div key={s.num} className="flex gap-4 py-4 cursor-pointer" onClick={() => isPast && setStep(s.num)}>
+                  <div
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-all z-10",
+                      isActive
+                        ? "bg-ink text-white ring-4 ring-canvas"
+                        : isPast
+                        ? "bg-ink text-white ring-4 ring-canvas"
+                        : "bg-surface text-muted ring-4 ring-canvas"
+                    )}
+                  >
+                    {isPast ? <Check size={16} weight="bold" /> : <s.icon size={16} weight={isActive ? "bold" : "regular"} />}
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <span className={cn("text-sm font-bold", isActive || isPast ? "text-ink" : "text-muted")}>
+                      {s.num} {s.label}
+                    </span>
+                    <span className="text-[11px] font-semibold text-muted line-clamp-1">{s.subLabel}</span>
+                  </div>
                 </div>
-                <span className="text-[9px] font-semibold ">
-                  {s.label}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div
-                  className={cn(
-                    "mx-3 mb-6 h-[2px] flex-1 rounded-full",
-                    step > s.num ? "bg-success" : "bg-border",
-                  )}
-                />
-              )}
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* Card */}
-        <div className="rounded-xl border border-hairline bg-card p-8 shadow-2xl backdrop-blur-md">
-          {/* AI Chat Mode */}
+          {/* Main Content Area */}
+          <div className="flex-1 rounded-2xl border border-hairline bg-card shadow-lg backdrop-blur-md min-h-[500px]">
+            {/* AI Chat Mode */}
           {aiMode && (
             <div className="flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center justify-between mb-4 pb-4 border-b border-hairline">
@@ -729,12 +745,24 @@ export default function CreateLoadPage() {
           )}
 
           {/* Manual Form Mode */}
-          {!aiMode && (
+          {!aiMode && step === 1 && (
             <div className="space-y-6 animate-in fade-in duration-300">
-              <h3 className="text-lg font-semibold tracking-tight text-ink mb-2 flex items-center gap-2">
-                <Package size={22} weight="bold" className="text-ink" />
-                Load Details
-              </h3>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h3 className="text-2xl font-bold tracking-tight text-ink mb-1">
+                    Basic Details
+                  </h3>
+                  <p className="text-sm font-semibold text-muted">Tell us about your load</p>
+                </div>
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-4 py-2 border border-hairline rounded-lg text-sm font-semibold text-ink bg-white shadow-sm hover:bg-surface-soft transition-colors"
+                >
+                  <Package size={16} weight="bold" />
+                  {isSubmitting ? "Saving..." : "Save Draft"}
+                </button>
+              </div>
 
               <div className="space-y-2">
                 <label className="ml-1  font-semibold  text-muted">
@@ -879,6 +907,9 @@ export default function CreateLoadPage() {
                     />
                   </div>
                 </div>
+              <div className="mt-8 bg-blue-50 text-blue-700 p-4 rounded-xl flex items-start gap-3 border border-blue-100">
+                <div className="mt-0.5 w-5 h-5 flex items-center justify-center bg-blue-600 text-white rounded-full font-bold text-xs">i</div>
+                <p className="text-sm font-semibold">Tip: More accurate details help you get better rates from carriers.</p>
               </div>
             </div>
           )}
