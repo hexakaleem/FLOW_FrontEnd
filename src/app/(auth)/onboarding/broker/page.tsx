@@ -161,8 +161,8 @@ export default function BrokerOnboardingPage() {
         toast.error('Enter a valid MC number');
         return;
       }
-      if (!verificationResult) {
-        toast.info('Verification required to proceed');
+      if (!authorityForm.getValues('mcNumber')) {
+        toast.error('Enter a valid MC number');
         return;
       }
       setStep(3);
@@ -474,52 +474,30 @@ export default function BrokerOnboardingPage() {
               <div className="space-y-5">
                 <div className="space-y-1.5" data-error={!!authorityForm.formState.errors.mcNumber}>
                   <label className="text-xs font-medium text-muted">MC Number</label>
-                  <input
-                    {...authorityForm.register('mcNumber')}
-                    className={cn(
-                      "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium",
-                      authorityForm.formState.errors.mcNumber ? "border-danger" : "border-hairline"
-                    )}
-                    placeholder="MC-XXXXXXX"
-                    value={authorityForm.getValues('mcNumber')}
-                    disabled={isVerifying || verificationResult === 'success'}
-                  />
+                    <input
+                      {...authorityForm.register('mcNumber')}
+                      className={cn(
+                        "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium",
+                        authorityForm.formState.errors.mcNumber ? "border-danger" : "border-hairline"
+                      )}
+                      placeholder="MC-XXXXXXX"
+                      disabled={isVerifying}
+                    />
                 </div>
 
-                <button
-                  onClick={verifyAuthority}
-                  disabled={isVerifying || verificationResult === 'success'}
-                  className="w-full h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] disabled:opacity-50"
-                >
-                  <MagnifyingGlass size={18} weight="bold" />
-                  {isVerifying ? 'Verifying...' : verificationResult === 'success' ? 'Verified' : 'Verify Now'}
-                </button>
-
-                {verificationResult === 'success' && (
-                  <div className="animate-in fade-in zoom-in duration-500">
-                    <div className="rounded-xl border border-hairline bg-surface-soft p-5 space-y-3">
-                      <h4 className="text-sm font-semibold text-ink">FMCSA Verification Result</h4>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted">Legal Name</span>
-                          <strong>Smith Brokerage LLC</strong>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted">Authority Status</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">Active</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted">Authority Type</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">Broker</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted">Bond/Trust</span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">$75,000 Active</span>
-                        </div>
-                      </div>
+                <div className="rounded-xl border border-hairline bg-surface-soft p-5 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 rounded-full bg-primary/10 p-1.5 text-primary">
+                      <Info size={16} weight="bold" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-ink">Authority Verification</h4>
+                      <p className="text-xs text-muted mt-1 leading-relaxed">
+                        By providing your MC number, you authorize FLOW to verify your operating authority with FMCSA records. This ensures all participants on the platform remain compliant.
+                      </p>
                     </div>
                   </div>
-                )}
+                </div>
 
                 {verificationResult === 'mismatch' && (
                   <div className="animate-in fade-in zoom-in duration-500">
