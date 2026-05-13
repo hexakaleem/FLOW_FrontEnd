@@ -3,37 +3,23 @@
 import React from "react";
 import {
   MapTrifold,
-  Printer,
-  Phone,
-  CaretDown,
-  Info,
   Package,
-  Star,
 } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
 
 interface Load {
   _id: string;
-  origin: { city: string; state: string; dh?: number; zip?: string };
-  destination: { city: string; state: string; dh?: number; zip?: string };
+  origin: { city: string; state: string; zip?: string };
+  destination: { city: string; state: string; zip?: string };
   trip: number;
   rate: number;
+  pickupDate: string;
+  deliveryDate?: string;
   equipment: {
     load: string;
     truck: string;
-    length: string;
     weight: string;
     commodity: string;
     refId: string;
-  };
-  broker: {
-    name: string;
-    phone: string;
-    mc: string;
-    creditScore: number;
-    daysToPay: number;
-    rating: number;
-    location: string;
   };
 }
 
@@ -52,14 +38,9 @@ export function LoadExpandedDetails({ load, onBook }: LoadExpandedDetailsProps) 
           {load.destination.city}
           <span className="text-muted-foreground font-normal text-xl ml-2">{load.trip} mi</span>
         </h2>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center justify-center h-10 w-10 rounded-full border border-hairline text-ink hover:bg-surface-soft transition-all">
-            <Printer size={20} weight="regular" />
-          </button>
-          <button className="flex items-center justify-center h-10 w-10 rounded-full border border-hairline text-ink hover:bg-surface-soft transition-all">
-            <MapTrifold size={20} weight="regular" />
-          </button>
-        </div>
+        <button className="flex items-center justify-center h-10 w-10 rounded-full border border-hairline text-ink hover:bg-surface-soft transition-all">
+          <MapTrifold size={20} weight="regular" />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -73,14 +54,18 @@ export function LoadExpandedDetails({ load, onBook }: LoadExpandedDetailsProps) 
               <div className="text-[18px] font-semibold text-ink leading-none">
                 {load.origin.city}, {load.origin.state}
               </div>
-              <div className="text-[14px] text-muted-foreground mt-1.5">Scheduled for Jun 11 • 14:00</div>
+              <div className="text-[14px] text-muted-foreground mt-1.5">
+                Pickup: {new Date(load.pickupDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+              </div>
             </div>
             
             <div>
               <div className="text-[18px] font-semibold text-ink leading-none">
                 {load.destination.city}, {load.destination.state}
               </div>
-              <div className="text-[14px] text-muted-foreground mt-1.5">Delivery estimated Jun 13</div>
+              <div className="text-[14px] text-muted-foreground mt-1.5">
+                Delivery: {load.deliveryDate ? new Date(load.deliveryDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "TBD"}
+              </div>
             </div>
           </div>
 
@@ -99,7 +84,7 @@ export function LoadExpandedDetails({ load, onBook }: LoadExpandedDetailsProps) 
           </div>
         </div>
 
-        {/* Column 2: Financials & Market Intelligence */}
+        {/* Column 2: Financials */}
         <div className="space-y-8 border-x border-hairline px-10">
           <div>
             <h4 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">FINANCIALS</h4>
@@ -110,7 +95,7 @@ export function LoadExpandedDetails({ load, onBook }: LoadExpandedDetailsProps) 
             <div className="flex items-center gap-4 text-[15px]">
               <div className="flex flex-col">
                 <span className="text-muted-foreground text-[12px] uppercase font-bold tracking-wider">Per Mile</span>
-                <span className="font-semibold text-ink">${(load.rate / load.trip).toFixed(2)}</span>
+                <span className="font-semibold text-ink">${load.trip > 0 ? (load.rate / load.trip).toFixed(2) : "—"}</span>
               </div>
               <div className="w-px h-8 bg-hairline" />
               <div className="flex flex-col">
@@ -121,69 +106,47 @@ export function LoadExpandedDetails({ load, onBook }: LoadExpandedDetailsProps) 
           </div>
 
           <div className="pt-8 border-t border-hairline">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                MARKET INTELLIGENCE <Info size={14} className="text-muted-foreground/40" />
-              </h4>
-              <span className="text-[10px] font-medium px-2 py-0.5 bg-surface-soft border border-hairline rounded-pill">DAT iQ POWERED</span>
-            </div>
-
-            <div className="bg-surface-soft rounded-lg p-6 space-y-6">
-              <div>
-                <div className="flex justify-between text-[13px] font-semibold text-ink mb-2">
-                  <span>Current Spot Avg</span>
-                  <span>${Math.round(load.rate * 1.15).toLocaleString()}</span>
-                </div>
-                <div className="h-1.5 w-full bg-hairline rounded-full overflow-hidden">
-                  <div className="h-full bg-success w-[75%] rounded-full shadow-[0_0_8px_rgba(16,185,129,0.2)]" />
-                </div>
-                <div className="flex justify-between text-[11px] text-muted-foreground mt-2 font-medium">
-                  <span>Low: ${Math.round(load.rate * 1.05)}</span>
-                  <span>High: ${Math.round(load.rate * 1.25)}</span>
-                </div>
+            <h4 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">LOAD REFERENCE</h4>
+            <div className="bg-surface-soft rounded-lg p-5 space-y-3">
+              <div className="flex justify-between text-[14px]">
+                <span className="text-muted-foreground font-medium">Reference ID</span>
+                <span className="font-semibold text-ink font-mono">{load.equipment.refId}</span>
               </div>
-
-              <div className="flex items-center gap-3 p-3 bg-canvas border border-hairline border-dashed rounded-md">
-                <Package size={20} className="text-primary/20" />
-                <span className="text-[12px] font-medium text-muted-foreground">Contract rates restricted for your account.</span>
+              <div className="flex justify-between text-[14px]">
+                <span className="text-muted-foreground font-medium">Equipment</span>
+                <span className="font-semibold text-ink">{load.equipment.truck}</span>
+              </div>
+              <div className="flex justify-between text-[14px]">
+                <span className="text-muted-foreground font-medium">Commodity</span>
+                <span className="font-semibold text-ink">{load.equipment.commodity}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Column 3: Partner Info & Primary CTA */}
+        {/* Column 3: Primary CTA */}
         <div className="space-y-8 flex flex-col justify-between">
           <div className="space-y-6">
             <div>
-              <h4 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">BROKER PARTNER</h4>
-              <div className="text-[22px] font-semibold text-ink leading-tight">{load.broker.name}</div>
-              <div className="text-[14px] text-muted-foreground mt-1 flex items-center gap-2">
-                {load.broker.location} • MC#{load.broker.mc}
+              <h4 className="text-[13px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">SHIPMENT SUMMARY</h4>
+              <div className="space-y-3 text-[15px]">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Origin</span>
+                  <span className="font-semibold text-ink">{load.origin.city}, {load.origin.state}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Destination</span>
+                  <span className="font-semibold text-ink">{load.destination.city}, {load.destination.state}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Distance</span>
+                  <span className="font-semibold text-ink">{load.trip} miles</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Rate</span>
+                  <span className="font-semibold text-success text-lg">${load.rate.toLocaleString()}</span>
+                </div>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6 pt-4 border-t border-hairline">
-              <div className="flex flex-col">
-                <span className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Credit Score</span>
-                <span className="text-[18px] font-semibold text-ink">{load.broker.creditScore}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider mb-1">Days to Pay</span>
-                <span className="text-[18px] font-semibold text-ink">{load.broker.daysToPay}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  size={16}
-                  weight="fill"
-                  className={i < Math.floor(load.broker.rating) ? "text-warning" : "text-hairline"}
-                />
-              ))}
-              <span className="text-[13px] font-semibold text-ink ml-2">{load.broker.rating}</span>
-              <span className="text-[13px] text-muted-foreground ml-1">({Math.floor(Math.random() * 500)} reviews)</span>
             </div>
           </div>
 
@@ -192,14 +155,11 @@ export function LoadExpandedDetails({ load, onBook }: LoadExpandedDetailsProps) 
               onClick={onBook}
               className="w-full h-12 bg-primary text-white font-semibold text-[14px] rounded-md shadow-md hover:bg-primary-active transition-all"
             >
-              Confirm Booking Request
-            </button>
-            <button className="w-full h-12 bg-canvas border border-hairline text-ink font-semibold text-[14px] rounded-md hover:bg-surface-soft transition-all">
-              Save for Review
+              Send Booking Request
             </button>
             <div className="flex items-center justify-center gap-2 text-[12px] text-muted-foreground font-medium pt-2">
-              <Phone size={14} />
-              Contact Partner: {load.broker.phone}
+              <Package size={14} />
+              Ref: {load.equipment.refId}
             </div>
           </div>
         </div>

@@ -47,6 +47,9 @@ interface FormData {
   equipmentType: string;
   category: string; // Full Truckload / LTL
   specialRequirements: string[];
+  shipperName: string;
+  shipperPhone: string;
+  shipperEmail: string;
 
   // Step 2 — Route
   originAddress: string;
@@ -70,9 +73,6 @@ interface FormData {
   // Step 3 — Pricing
   rate: string;
   rateType: string;
-  detentionRate: string;
-  tonuRate: string;
-  useEscrow: boolean;
   aiLow: number;
   aiMarket: number;
   aiHigh: number;
@@ -95,6 +95,9 @@ const INITIAL_STATE: FormData = {
   equipmentType: "Flatbed",
   category: "Full Truckload",
   specialRequirements: [],
+  shipperName: "",
+  shipperPhone: "",
+  shipperEmail: "",
 
   originAddress: "",
   originCity: "",
@@ -116,9 +119,6 @@ const INITIAL_STATE: FormData = {
 
   rate: "",
   rateType: "flat",
-  detentionRate: "",
-  tonuRate: "",
-  useEscrow: false,
   aiLow: 0,
   aiMarket: 0,
   aiHigh: 0,
@@ -277,6 +277,9 @@ export default function CreateLoadPage() {
 
   const buildPayload = (isPublic: boolean) => {
     return {
+      shipperName: form.shipperName || "Shipper",
+      shipperPhone: form.shipperPhone || "000-000-0000",
+      shipperEmail: form.shipperEmail || "shipper@example.com",
       origin: {
         address: form.originAddress,
         city: form.originCity,
@@ -296,7 +299,7 @@ export default function CreateLoadPage() {
       pickupDate: `${form.pickupDate}T${form.pickupTime}:00`,
       deliveryDate: `${form.deliveryDate}T${form.deliveryTime}:00`,
       weight: Number(form.weight),
-      truckType: form.equipmentType.toLowerCase().replace(" ", "_"),
+      truckType: form.equipmentType,
       rate: Number(form.rate),
       rateType: form.rateType === "per_mile" ? "per_mile" : "per_trip",
       commodity: form.commodity,
@@ -310,7 +313,11 @@ export default function CreateLoadPage() {
         .filter(Boolean)
         .join(", "),
       isPublic,
-      status: isPublic ? "posted" : "draft",
+      requiresHazmat: form.hazmat || false,
+      requiresLiftgate: form.liftgate || false,
+      maxVehicleLength: form.trailerLength ? Number(form.trailerLength) : null,
+      temperatureMin: null,
+      temperatureMax: null,
     };
   };
 
@@ -570,6 +577,42 @@ export default function CreateLoadPage() {
                       </button>
                     );
                   })}
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-hairline">
+                <h4 className="text-base font-semibold tracking-tight text-ink">
+                  Shipper Contact
+                </h4>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <label className="ml-1 font-semibold text-muted">Name</label>
+                    <input
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                      placeholder="Shipper name"
+                      value={form.shipperName}
+                      onChange={(e) => update("shipperName", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="ml-1 font-semibold text-muted">Phone</label>
+                    <input
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                      placeholder="(555) 555-5555"
+                      value={form.shipperPhone}
+                      onChange={(e) => update("shipperPhone", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="ml-1 font-semibold text-muted">Email</label>
+                    <input
+                      type="email"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                      placeholder="shipper@company.com"
+                      value={form.shipperEmail}
+                      onChange={(e) => update("shipperEmail", e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

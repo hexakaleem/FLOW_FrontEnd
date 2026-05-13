@@ -6,12 +6,8 @@ import {
   Package,
   Warning,
   ArrowClockwise,
-  List,
-  CaretDown,
 } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
-import { useAppSelector } from "@/store/hooks";
 import { toast } from "sonner";
 import { MarketplaceFilters } from "@/components/marketplace/MarketplaceFilters";
 import { LoadTableRow } from "@/components/marketplace/LoadTableRow";
@@ -37,10 +33,6 @@ interface Load {
   estimatedDistance: number;
   commodity: string;
   weight: number;
-  broker?: {
-    orgName: string;
-    riskScore?: number;
-  };
   createdAt?: string;
   status?: string;
 }
@@ -49,20 +41,9 @@ interface Filters {
   origin: string;
   destination: string;
   equipmentType: string;
-  loadType: string;
   minRate: string;
   maxRate: string;
 }
-
-const EQUIPMENT_MAP: Record<string, string> = {
-  "All Equipment": "",
-  "Vans (Standard)": "Dry Van",
-  "Flatbed": "Flatbed",
-  "Reefer": "Reefer",
-  "Step Deck": "Step Deck",
-  "Lowboy": "Lowboy",
-  "Tanker": "Tanker",
-};
 
 function formatAge(createdAt?: string): string {
   if (!createdAt) return "--";
@@ -98,9 +79,7 @@ export default function MarketplacePage() {
       if (filters) {
         if (filters.origin) params.originCity = filters.origin;
         if (filters.destination) params.destCity = filters.destination;
-        if (filters.equipmentType && filters.equipmentType !== "All Equipment") {
-          params.truckType = EQUIPMENT_MAP[filters.equipmentType] || filters.equipmentType;
-        }
+        if (filters.equipmentType) params.truckType = filters.equipmentType;
         if (filters.minRate) params.minRate = Number(filters.minRate);
         if (filters.maxRate) params.maxRate = Number(filters.maxRate);
       }
@@ -124,10 +103,16 @@ export default function MarketplacePage() {
     setShowBookDialog(true);
   };
 
+  const [bookingTruckId, setBookingTruckId] = useState("");
+  const [bookingDriverId, setBookingDriverId] = useState("");
+
   const handleConfirmBook = async () => {
     if (!bookingLoadId) return;
     try {
-      const response = await api.post(`/loads/${bookingLoadId}/booking-request`);
+      const body: Record<string, string> = {};
+      if (bookingTruckId) body.truckId = bookingTruckId;
+      if (bookingDriverId) body.driverId = bookingDriverId;
+      const response = await api.post(`/loads/${bookingLoadId}/booking-request`, body);
       if (response.data.success) {
         toast.success("Booking request sent successfully!");
         setExpandedLoadId(null);
@@ -147,35 +132,22 @@ export default function MarketplacePage() {
       <MarketplaceFilters onSearch={fetchLoads} isLoading={isLoading} />
 
       {/* Results Header */}
-      <div className="flex items-center justify-between px-8 py-6 border-b border-hairline bg-canvas shrink-0">
-        <div className="flex items-center gap-6">
+      <div className="flex items-center justify-between px-8 py-5 border-b border-hairline bg-canvas shrink-0">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => fetchLoads()}
             className="flex items-center gap-2 text-muted hover:text-ink transition-colors"
           >
             <ArrowClockwise size={20} className={isLoading ? "animate-spin" : ""} />
           </button>
-          <div className="flex flex-col">
-            <h3 className="text-[22px] font-semibold text-ink tracking-tight leading-none">
-              Marketplace <span className="text-muted font-normal ml-2">({loads.length} loads available)</span>
-            </h3>
-            <button className="flex items-center gap-2 mt-2 text-[13px] font-medium text-muted hover:text-ink transition-colors group">
-              Newest loads first
-              <CaretDown size={14} weight="bold" className="group-hover:translate-y-0.5 transition-transform" />
-            </button>
-          </div>
+          <h3 className="text-[20px] font-semibold text-ink tracking-tight leading-none">
+            Available Loads <span className="text-muted font-normal ml-2 text-[16px]">({loads.length})</span>
+          </h3>
         </div>
-
-        <button
-          onClick={() => fetchLoads()}
-          className="text-[13px] font-semibold text-muted hover:text-ink transition-colors flex items-center gap-2"
-        >
-          Refresh Loads
-        </button>
       </div>
 
       {/* Table Header */}
-      <div className="flex items-center h-12 px-6 bg-surface-soft border-b border-hairline text-[11px] font-semibold text-muted shrink-0">
+      <div className="flex items-center h-12 px-6 bg-surface-soft border-b border-hairline text-[11px] font-semibold text-muted shrink-0 uppercase tracking-wider">
         <div className="w-14">Age</div>
         <div className="w-24">Rate</div>
         <div className="w-16">Trip</div>
@@ -184,8 +156,6 @@ export default function MarketplacePage() {
         <div className="w-44">Destination</div>
         <div className="w-24">Pick Up</div>
         <div className="flex-1 min-w-[160px]">Equipment</div>
-        <div className="w-48">Company</div>
-        <div className="w-28 text-right">CS | DTP</div>
         <div className="w-24" />
       </div>
 
@@ -230,10 +200,7 @@ export default function MarketplacePage() {
                     pickup: formatPickup(load.pickupDate),
                     equipment: load.truckType,
                     weight: `${load.weight.toLocaleString()} lbs`,
-                    length: "53 ft",
-                    company: load.broker?.orgName || "Unknown Broker",
-                    creditScore: load.broker?.riskScore || 95,
-                    daysToPay: 19,
+                    commodity: load.commodity,
                   }}
                   isExpanded={isExpanded}
                   onToggle={() => setExpandedLoadId(isExpanded ? null : load._id)}
@@ -247,22 +214,14 @@ export default function MarketplacePage() {
                       destination: load.destination,
                       trip: load.estimatedDistance || 0,
                       rate: load.rate,
+                      pickupDate: load.pickupDate,
+                      deliveryDate: load.deliveryDate,
                       equipment: {
                         load: "Full",
                         truck: load.truckType,
-                        length: "53 ft",
                         weight: `${load.weight.toLocaleString()} lbs`,
                         commodity: load.commodity || "General Freight",
                         refId: load._id.slice(-8).toUpperCase(),
-                      },
-                      broker: {
-                        name: load.broker?.orgName || "Unknown Broker",
-                        phone: "(555) 555-5500",
-                        mc: "MC#123456",
-                        creditScore: load.broker?.riskScore || 95,
-                        daysToPay: 19,
-                        rating: 4.5,
-                        location: "Niles, IL",
                       },
                     }}
                     onBook={() => handleBookClick(load._id)}

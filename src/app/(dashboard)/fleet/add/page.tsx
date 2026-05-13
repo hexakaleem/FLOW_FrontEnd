@@ -120,6 +120,9 @@ export default function AddVehiclePage() {
   const [model, setModel] = useState("");
   const [equipmentType, setEquipmentType] = useState("dryVan");
   const [maxPayload, setMaxPayload] = useState("");
+  const [trailerLength, setTrailerLength] = useState("");
+  const [hasLiftgate, setHasLiftgate] = useState(false);
+  const [isHazmatCertified, setIsHazmatCertified] = useState(false);
 
   // step 3 fields
   const [registrationFile, setRegistrationFile] = useState<File | null>(null);
@@ -175,7 +178,12 @@ export default function AddVehiclePage() {
       year: Number(year),
       make,
       model,
-      maxPayload: maxPayload ? Number(maxPayload) : undefined,
+      specs: {
+        maxWeight: maxPayload ? Number(maxPayload) : null,
+        length: trailerLength ? Number(trailerLength) : null,
+        hasLiftgate,
+        isHazmatCertified,
+      },
     };
 
     try {
@@ -486,6 +494,49 @@ export default function AddVehiclePage() {
                 placeholder="48000"
                 className="w-full rounded-md border border-hairline bg-surface-soft px-4 py-3 text-sm font-bold text-ink placeholder:text-muted outline-none focus:border-primary transition-all"
               />
+            </div>
+
+            <div className="space-y-2">
+              <label className="ml-1  font-semibold  text-muted">
+                Trailer Length (ft)
+              </label>
+              <input
+                type="number"
+                value={trailerLength}
+                onChange={(e) => setTrailerLength(e.target.value)}
+                placeholder="53"
+                className="w-full rounded-md border border-hairline bg-surface-soft px-4 py-3 text-sm font-bold text-ink placeholder:text-muted outline-none focus:border-primary transition-all"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="ml-1  font-semibold  text-muted">
+                Capabilities
+              </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setHasLiftgate(!hasLiftgate)}
+                  className={cn(
+                    "flex-1 px-4 py-3 rounded-md border font-semibold transition-all text-sm",
+                    hasLiftgate
+                      ? "bg-primary border-primary text-white shadow-sm"
+                      : "bg-surface-soft border-hairline text-muted hover:border-muted",
+                  )}
+                >
+                  {hasLiftgate ? "✓" : ""} Liftgate
+                </button>
+                <button
+                  onClick={() => setIsHazmatCertified(!isHazmatCertified)}
+                  className={cn(
+                    "flex-1 px-4 py-3 rounded-md border font-semibold transition-all text-sm",
+                    isHazmatCertified
+                      ? "bg-primary border-primary text-white shadow-sm"
+                      : "bg-surface-soft border-hairline text-muted hover:border-muted",
+                  )}
+                >
+                  {isHazmatCertified ? "✓" : ""} Hazmat Certified
+                </button>
+              </div>
             </div>
           </div>
         )}

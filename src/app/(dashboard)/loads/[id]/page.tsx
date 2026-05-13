@@ -182,6 +182,11 @@ export default function LoadDetailPage() {
   const [counterOffer, setCounterOffer] = useState<Record<string, string>>({});
   const [showCounterInput, setShowCounterInput] = useState<string | null>(null);
 
+  const [matchedTrucks, setMatchedTrucks] = useState<any[]>([]);
+  const [matchingLoading, setMatchingLoading] = useState(false);
+
+  const isBroker = user?.role === "broker";
+
   // Subscribe to real-time updates for this load
   const { subscribeToLoad, unsubscribeFromLoad } = useSocket();
   useEffect(() => {
@@ -226,6 +231,23 @@ export default function LoadDetailPage() {
     fetchData();
   }, [fetchData]);
 
+  const fetchMatchedTrucks = useCallback(async () => {
+    if (!params.id || !isBroker) return;
+    setMatchingLoading(true);
+    try {
+      const res = await api.get(`/loads/${params.id}/matching-trucks`);
+      setMatchedTrucks(res.data?.data?.matches ?? []);
+    } catch {
+      setMatchedTrucks([]);
+    } finally {
+      setMatchingLoading(false);
+    }
+  }, [params.id, isBroker]);
+
+  useEffect(() => {
+    if (load && isBroker) fetchMatchedTrucks();
+  }, [load, isBroker, fetchMatchedTrucks]);
+
   // -----------------------------------------------------------------------
   // Broker Actions
   // -----------------------------------------------------------------------
@@ -238,7 +260,7 @@ export default function LoadDetailPage() {
   const handleAcceptBid = async (requestId: string) => {
     setActionLoading(requestId);
     try {
-      await api.put(`/loads/${params.id}/bookings/${requestId}/confirm`);
+      await api.post(`/loads/${params.id}/booking-confirm`, { requestId });
       toast.success("Booking confirmed!");
       fetchData();
     } catch (err: unknown) {
@@ -254,7 +276,7 @@ export default function LoadDetailPage() {
   const handleDenyBid = async (requestId: string) => {
     setActionLoading(requestId);
     try {
-      await api.put(`/loads/${params.id}/bookings/${requestId}/deny`);
+      await api.post(`/loads/${params.id}/booking-deny`, { requestId });
       toast.success("Booking request denied");
       fetchData();
     } catch (err: unknown) {
@@ -275,8 +297,9 @@ export default function LoadDetailPage() {
     }
     setActionLoading(requestId);
     try {
-      await api.post(`/bookings/${requestId}/counter`, {
+      await api.post(`/loads/${params.id}/counteroffer`, {
         proposedRate: Number(amount),
+        bookingRequestId: requestId,
       });
       toast.success("Counter offer sent!");
       setShowCounterInput(null);
@@ -332,7 +355,6 @@ export default function LoadDetailPage() {
   }
 
   const isActive = ["posted", "booked", "in_transit"].includes(load.status);
-  const isBroker = user?.role === "broker";
   const canBook =
     user?.role === "carrier" || user?.role === "independent_driver";
 
@@ -368,20 +390,12 @@ export default function LoadDetailPage() {
         <PermissionGate roles={["broker"]}>
           <div className="flex gap-2">
             {isActive && (
-              <>
-                <button className="btn btn-secondary btn-sm">
-                  <PaperPlaneTilt size={16} weight="bold" /> Edit
-                </button>
-                <button className="btn btn-secondary btn-sm">
-                  <PaperPlaneTilt size={16} weight="bold" /> Copy
-                </button>
-                <button
-                  onClick={() => router.push(`/tracking/${load._id}`)}
-                  className="btn btn-secondary btn-sm"
-                >
-                  <MapPin size={16} weight="bold" /> Tracking Link
-                </button>
-              </>
+              <button
+                onClick={() => router.push(`/tracking/${load._id}`)}
+                className="btn btn-secondary btn-sm"
+              >
+                <MapPin size={16} weight="bold" /> Tracking
+              </button>
             )}
           </div>
         </PermissionGate>
@@ -500,52 +514,66 @@ export default function LoadDetailPage() {
             )}
           </div>
 
-          {/* Documents section */}
-          <div className="rounded-2xl border border-hairline bg-card p-6 shadow-sm">
-            <h3 className="text-base font-semibold tracking-tight text-ink mb-5 flex items-center gap-2">
-              <FileText size={20} weight="bold" className="text-primary" />
-              Required Documents
-            </h3>
-            <div className="space-y-4">
-              {[
-                "Rate Confirmation",
-                "Bill of Lading (BOL)",
-                "Proof of Delivery (POD)",
-              ].map((doc, i) => {
-                const uploaded = i < 2; // first two uploaded
-                return (
-                  <div key={doc} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {uploaded ? (
-                        <CheckCircle
-                          size={20}
-                          weight="fill"
-                          className="text-success"
-                        />
-                      ) : (
-                        <Circle
-                          size={20}
-                          weight="bold"
-                          className="text-muted"
-                        />
-                      )}
-                      <span className="text-sm font-bold text-ink">
-                        {doc}
-                      </span>
-                    </div>
-                    <span
-                      className={cn(
-                        "badge text-[9px]",
-                        uploaded ? "badge-green" : "badge-amber",
-                      )}
+          {/* Matched Trucks — broker only, for posted loads */}
+          {isBroker && load.status === "posted" && (
+            <div className="rounded-2xl border border-hairline bg-card p-6 shadow-sm">
+              <h3 className="text-base font-semibold tracking-tight text-ink mb-4 flex items-center gap-2">
+                <Truck size={20} weight="bold" className="text-success" />
+                Matched Trucks ({matchedTrucks.length})
+              </h3>
+              {matchingLoading ? (
+                <div className="text-center py-6">
+                  <CircleNotch size={24} weight="bold" className="animate-spin text-primary mx-auto" />
+                </div>
+              ) : matchedTrucks.length === 0 ? (
+                <div className="text-center py-6 text-muted">
+                  <Warning size={32} weight="thin" className="mx-auto mb-2 opacity-20" />
+                  <p className="text-[10px] font-semibold">No matching trucks found nearby</p>
+                  <p className="text-[9px] font-bold text-muted/60 mt-1">
+                    Trucks need to update their GPS location to appear here
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {matchedTrucks.map((truck: any, i: number) => (
+                    <div
+                      key={truck.truckId}
+                      className="flex items-center gap-3 rounded-xl bg-surface-soft p-3 border border-hairline"
                     >
-                      {uploaded ? "Uploaded" : "Pending"}
-                    </span>
-                  </div>
-                );
-              })}
+                      <div
+                        className={cn(
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white",
+                          truck.matchScore >= 0.8 ? "bg-success" : truck.matchScore >= 0.5 ? "bg-amber-500" : "bg-muted",
+                        )}
+                      >
+                        {i + 1}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-ink">
+                          {truck.plateNumber} · {truck.truckType?.replace(/_/g, " ")}
+                        </div>
+                        <div className="text-[10px] font-bold text-muted">
+                          {truck.distance?.toFixed(1)} mi away
+                          {truck.currentLocation?.city ? ` · ${truck.currentLocation.city}, ${truck.currentLocation.state}` : ""}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {truck.specs?.hasLiftgate && (
+                          <span className="badge badge-indigo text-[8px]">Liftgate</span>
+                        )}
+                        {truck.specs?.isHazmatCertified && (
+                          <span className="badge badge-red text-[8px]">Hazmat</span>
+                        )}
+                        <span className="text-sm font-semibold text-success">
+                          {Math.round(truck.matchScore * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Shipment Timeline */}
           <div className="rounded-2xl border border-hairline bg-card p-6 shadow-sm">
@@ -663,13 +691,13 @@ export default function LoadDetailPage() {
                   {load.rateType?.replace(/_/g, " ") || "Flat Rate"}
                 </span>
               </div>
-              {load._id && (
+              {load.estimatedDistance && (
                 <>
                   <div className="h-px bg-border" />
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted font-bold">Escrow</span>
-                    <span className="badge badge-blue text-[9px] gap-1">
-                      <LockSimple size={10} weight="bold" /> Held
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted font-bold">Per Mile</span>
+                    <span className="text-sm font-bold text-ink">
+                      ${(load.rate / load.estimatedDistance).toFixed(2)}
                     </span>
                   </div>
                 </>
@@ -685,43 +713,19 @@ export default function LoadDetailPage() {
                 Assigned Carrier
               </h3>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-xs font-semibold text-white shadow-lg ">
-                  AC
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-xs font-semibold text-white shadow-lg">
+                  <Truck size={20} weight="bold" />
                 </div>
                 <div>
                   <div className="text-sm font-semibold text-ink">
-                    Assigned Carrier
+                    Truck: {load.assignedTruckId?.slice(-6).toUpperCase() || "—"}
                   </div>
                   <div className="text-[10px] font-bold text-muted">
-                    {load.assignedDriverId || "Driver TBD"}
+                    Driver: {load.assignedDriverId?.slice(-6).toUpperCase() || "TBD"}
                   </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-[10px] font-bold text-muted">
-                  Risk Score:
-                </span>
-                <div className="risk-score high h-8 w-8 text-[9px] shadow-sm">
-                  92
-                </div>
-                <div className="flex items-center gap-0.5 text-amber-500 ml-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={12}
-                      weight={i < 4 ? "fill" : "regular"}
-                      className={i < 4 ? "text-amber-500" : "text-muted"}
-                    />
-                  ))}
                 </div>
               </div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => router.push("/messaging")}
-                  className="btn btn-secondary flex-1 text-[10px] font-semibold h-9"
-                >
-                  <ChatText size={14} weight="bold" /> Message
-                </button>
                 <button
                   onClick={() => router.push(`/tracking/${load._id}`)}
                   className="btn btn-primary flex-1 text-[10px] font-semibold h-9"

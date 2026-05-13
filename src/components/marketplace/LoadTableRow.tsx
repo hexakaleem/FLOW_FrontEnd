@@ -9,16 +9,12 @@ interface Load {
   age: string;
   rate: number;
   trip: number;
-  origin: { city: string; state: string; dh?: number };
-  destination: { city: string; state: string; dh?: number };
+  origin: { city: string; state: string };
+  destination: { city: string; state: string };
   pickup: string;
   equipment: string;
   weight: string;
-  length: string;
-  company: string;
-  contact?: string;
-  creditScore: number;
-  daysToPay: number;
+  commodity?: string;
 }
 
 interface LoadTableRowProps {
@@ -38,14 +34,6 @@ export function LoadTableRow({ load, isExpanded, onToggle, onBook }: LoadTableRo
       )}
     >
       <div className="flex items-center h-14 px-6 text-[14px] text-body-text font-medium">
-        <div className="w-8 flex justify-center mr-3">
-          <input 
-            type="checkbox" 
-            className="rounded-sm border-hairline accent-primary" 
-            onClick={(e) => e.stopPropagation()} 
-          />
-        </div>
-        
         <div className="w-14 text-muted-foreground font-normal">{load.age}</div>
         
         <div className="w-24 font-semibold text-ink text-[15px]">
@@ -56,7 +44,6 @@ export function LoadTableRow({ load, isExpanded, onToggle, onBook }: LoadTableRo
         
         <div className="w-44 truncate font-semibold text-ink">
           {load.origin.city}, {load.origin.state}
-          <span className="ml-1 text-muted-foreground font-normal text-[12px]">({load.origin.dh})</span>
         </div>
         
         <div className="w-10 flex justify-center">
@@ -65,23 +52,12 @@ export function LoadTableRow({ load, isExpanded, onToggle, onBook }: LoadTableRo
         
         <div className="w-44 truncate font-semibold text-ink">
           {load.destination.city}, {load.destination.state}
-          <span className="ml-1 text-muted-foreground font-normal text-[12px]">({load.destination.dh})</span>
         </div>
         
         <div className="w-24 font-medium">{load.pickup}</div>
         
         <div className="flex-1 min-w-[160px] truncate text-muted-foreground">
           {load.equipment} • {load.weight}
-        </div>
-        
-        <div className="w-48 text-ink font-semibold truncate hover:underline underline-offset-4 decoration-hairline">
-          {load.company}
-        </div>
-        
-        <div className="w-28 text-right font-semibold text-ink tabular-nums">
-          {load.creditScore} <span className="text-[10px] text-muted-foreground uppercase ml-0.5">CS</span>
-          <span className="mx-2 text-hairline">|</span>
-          {load.daysToPay} <span className="text-[10px] text-muted-foreground uppercase ml-0.5">DTP</span>
         </div>
         
         <div className="w-24 flex justify-end">

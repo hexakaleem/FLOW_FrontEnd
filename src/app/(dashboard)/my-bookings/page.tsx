@@ -255,8 +255,8 @@ export default function MyBookingsPage() {
     }
     setActionLoading(bookingId);
     try {
-      await api.post(`/bookings/${bookingId}/counter`, {
-        rate: Number(counterRate),
+      await api.post(`/loads/${loadId}/counteroffer`, {
+        proposedRate: Number(counterRate),
       });
       toast.success("Counter offer sent!");
       fetchBookings();
@@ -274,7 +274,7 @@ export default function MyBookingsPage() {
     if (!bookingId) return;
     setActionLoading(bookingId);
     try {
-      await api.put(`/loads/${loadId}/bookings/${bookingId}/deny`);
+      await api.put(`/loads/${loadId}/bookings/${bookingId}/cancel`);
       toast.success("Bid declined");
       fetchBookings();
     } catch (err: unknown) {
