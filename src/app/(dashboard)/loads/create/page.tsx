@@ -676,7 +676,7 @@ export default function CreateLoadPage() {
                 {chatMessages.map((msg, i) => (
                   <div key={i} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
                     <div className={cn(
-                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                      "max-w-[80%] rounded-2xl px-3 py-2 text-sm text-sm leading-relaxed",
                       msg.role === "user"
                         ? "bg-primary text-white rounded-br-md"
                         : "bg-surface-soft text-ink rounded-bl-md border border-hairline"
@@ -693,7 +693,7 @@ export default function CreateLoadPage() {
                 ))}
                 {aiIsLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-surface-soft rounded-2xl rounded-bl-md px-4 py-3 border border-hairline">
+                    <div className="bg-surface-soft rounded-2xl rounded-bl-md px-3 py-2 text-sm border border-hairline">
                       <div className="flex gap-1.5">
                         <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                         <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -769,14 +769,14 @@ export default function CreateLoadPage() {
                   Load Title / Reference
                 </label>
                 <input
-                  className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                  className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                   placeholder="e.g., Produce shipment to Dallas"
                   value={form.title}
                   onChange={(e) => update("title", e.target.value)}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="ml-1  font-semibold  text-muted">
                     Load Category
@@ -787,7 +787,7 @@ export default function CreateLoadPage() {
                         key={cat}
                         onClick={() => update("category", cat)}
                         className={cn(
-                          "flex-1 px-4 py-3 rounded-md border  font-semibold  transition-all",
+                          "flex-1 px-3 py-2 text-sm rounded-md border  font-semibold  transition-all",
                           form.category === cat
                             ? "bg-primary border-primary text-white shadow-sm"
                             : "bg-surface-soft border-hairline text-muted hover:border-muted",
@@ -803,7 +803,7 @@ export default function CreateLoadPage() {
                     Equipment Type
                   </label>
                   <select
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none appearance-none cursor-pointer"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none appearance-none cursor-pointer"
                     value={form.equipmentType}
                     onChange={(e) => update("equipmentType", e.target.value)}
                   >
@@ -814,13 +814,13 @@ export default function CreateLoadPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="ml-1  font-semibold  text-muted">
                     Commodity Type
                   </label>
                   <select
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none appearance-none cursor-pointer"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none appearance-none cursor-pointer"
                     value={form.commodity}
                     onChange={(e) => update("commodity", e.target.value)}
                   >
@@ -835,7 +835,7 @@ export default function CreateLoadPage() {
                   </label>
                   <input
                     type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="e.g., 42000"
                     value={form.weight}
                     onChange={(e) => update("weight", e.target.value)}
@@ -860,7 +860,7 @@ export default function CreateLoadPage() {
                           )
                         }
                         className={cn(
-                          "px-4 py-2.5 rounded-md border  font-semibold  transition-all",
+                          "px-3 py-2 text-sm rounded-md border  font-semibold  transition-all",
                           active
                             ? "bg-primary border-primary text-white shadow-sm"
                             : "bg-surface-soft border-hairline text-muted hover:border-muted",
@@ -881,7 +881,7 @@ export default function CreateLoadPage() {
                   <div className="space-y-2">
                     <label className="ml-1 font-semibold text-muted">Name</label>
                     <input
-                      className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                       placeholder="Shipper name"
                       value={form.shipperName}
                       onChange={(e) => update("shipperName", e.target.value)}
@@ -890,7 +890,7 @@ export default function CreateLoadPage() {
                   <div className="space-y-2">
                     <label className="ml-1 font-semibold text-muted">Phone</label>
                     <input
-                      className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                       placeholder="(555) 555-5555"
                       value={form.shipperPhone}
                       onChange={(e) => update("shipperPhone", e.target.value)}
@@ -900,7 +900,7 @@ export default function CreateLoadPage() {
                     <label className="ml-1 font-semibold text-muted">Email</label>
                     <input
                       type="email"
-                      className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                      className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                       placeholder="shipper@company.com"
                       value={form.shipperEmail}
                       onChange={(e) => update("shipperEmail", e.target.value)}
@@ -937,19 +937,19 @@ export default function CreateLoadPage() {
                 />
                 <div className="grid grid-cols-3 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="City"
                     value={form.originCity}
                     onChange={(e) => update("originCity", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="State"
                     value={form.originState}
                     onChange={(e) => update("originState", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="ZIP"
                     value={form.originZip}
                     onChange={(e) => update("originZip", e.target.value)}
@@ -957,7 +957,7 @@ export default function CreateLoadPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="Contact name"
                     value={form.originContactName}
                     onChange={(e) =>
@@ -965,7 +965,7 @@ export default function CreateLoadPage() {
                     }
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="Contact phone"
                     value={form.originContactPhone}
                     onChange={(e) =>
@@ -1020,19 +1020,19 @@ export default function CreateLoadPage() {
                 />
                 <div className="grid grid-cols-3 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="City"
                     value={form.destCity}
                     onChange={(e) => update("destCity", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="State"
                     value={form.destState}
                     onChange={(e) => update("destState", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="ZIP"
                     value={form.destZip}
                     onChange={(e) => update("destZip", e.target.value)}
@@ -1040,13 +1040,13 @@ export default function CreateLoadPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="Contact name"
                     value={form.destContactName}
                     onChange={(e) => update("destContactName", e.target.value)}
                   />
                   <input
-                    className="rounded-md border border-hairline bg-surface-soft px-4 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="Contact phone"
                     value={form.destContactPhone}
                     onChange={(e) => update("destContactPhone", e.target.value)}
@@ -1145,7 +1145,7 @@ export default function CreateLoadPage() {
                 </label>
                 <input
                   type="number"
-                  className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-3xl font-semibold text-ink outline-none focus:border-primary transition-all"
+                  className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-3xl font-semibold text-ink outline-none focus:border-primary transition-all"
                   placeholder="0"
                   value={form.rate}
                   onChange={(e) => update("rate", e.target.value)}
@@ -1200,14 +1200,14 @@ export default function CreateLoadPage() {
                 Requirements
               </h3>
 
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="ml-1  font-semibold  text-muted">
                     Trailer Length (ft)
                   </label>
                   <input
                     type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="e.g., 53"
                     value={form.trailerLength}
                     onChange={(e) => update("trailerLength", e.target.value)}
@@ -1219,7 +1219,7 @@ export default function CreateLoadPage() {
                   </label>
                   <input
                     type="number"
-                    className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-bold outline-none focus:border-primary transition-all"
+                    className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-bold outline-none focus:border-primary transition-all"
                     placeholder="e.g., 45000"
                     value={form.weightLimit}
                     onChange={(e) => update("weightLimit", e.target.value)}
@@ -1259,7 +1259,7 @@ export default function CreateLoadPage() {
                       key={key}
                       onClick={() => update(key, !form[key])}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-2.5 rounded-md border  font-semibold  transition-all",
+                        "flex items-center gap-2 px-3 py-2 text-sm rounded-md border  font-semibold  transition-all",
                         form[key]
                           ? "bg-primary border-primary text-white shadow-sm"
                           : "bg-surface-soft border-hairline text-muted hover:border-muted",
@@ -1316,7 +1316,7 @@ export default function CreateLoadPage() {
                   Notes to Carrier
                 </label>
                 <textarea
-                  className="w-full rounded-md border border-hairline bg-surface-soft px-5 py-4 text-sm font-medium outline-none focus:border-primary transition-all h-28 resize-none"
+                  className="w-full rounded-md border border-hairline bg-surface-soft px-3 py-2 text-sm font-medium outline-none focus:border-primary transition-all h-28 resize-none"
                   placeholder="Any special instructions..."
                   value={form.notesToCarrier}
                   onChange={(e) => update("notesToCarrier", e.target.value)}
