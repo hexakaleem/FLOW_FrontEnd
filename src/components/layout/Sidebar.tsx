@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "react-Link";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/store/hooks";
