@@ -20,6 +20,7 @@ import {
   SignOut,
   ClockCounterClockwise,
   Users,
+  PaperPlaneTilt,
 } from "@phosphor-icons/react";
 
 interface NavItem {
@@ -39,6 +40,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
   broker: [
     { href: "/dashboard", label: "Dashboard", Icon: Gauge },
     { href: "/loads", label: "My Loads", Icon: Package },
+    { href: "/booking-requests", label: "Bids & Requests", Icon: PaperPlaneTilt },
     { href: "/loads/create", label: "Create Load", Icon: Storefront },
     { href: "/freight-history", label: "Freight History", Icon: ClockCounterClockwise },
     { href: "/payments", label: "Payments", Icon: CurrencyDollar },
