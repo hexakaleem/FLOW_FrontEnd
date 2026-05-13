@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, XCircle, User, Shield, Info, MagnifyingGlass, UserMinus, UserPlus, Clock, FileText } from '@phosphor-icons/react';
+import { CheckCircle, XCircle, User, Shield, Info, MagnifyingGlass, UserMinus, UserPlus, Clock, FileText, Trash } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store/hooks';
@@ -85,6 +85,23 @@ export default function AdminUsersPage() {
       setUsers(prev => prev.map(u => u._id === userId ? { ...u, status: 'active' } : u));
     } catch {
       toast.error('Failed to reactivate');
+    } finally {
+      setIsProcessing(null);
+    }
+  }
+
+  async function handleDelete(userId: string) {
+    if (!window.confirm('Are you sure you want to permanently delete this user account? This action cannot be undone.')) {
+      return;
+    }
+
+    setIsProcessing(userId);
+    try {
+      await api.delete(`/admin/users/${userId}`);
+      toast.success('User account deleted');
+      setUsers(prev => prev.filter(u => u._id !== userId));
+    } catch {
+      toast.error('Failed to delete user');
     } finally {
       setIsProcessing(null);
     }
@@ -212,6 +229,15 @@ export default function AdminUsersPage() {
                           Reactivate
                         </button>
                       ) : null}
+                      <button
+                        onClick={() => handleDelete(u._id)}
+                        disabled={!!isProcessing}
+                        className="flex h-8 items-center gap-1.5 rounded-lg border border-danger/30 px-3 font-semibold text-danger hover:bg-danger/5 disabled:opacity-50"
+                        title="Delete User Account Permanently"
+                      >
+                        <Trash size={14} weight="bold" />
+                        Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
