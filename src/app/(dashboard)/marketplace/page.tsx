@@ -142,8 +142,11 @@ export default function MarketplacePage() {
 
           // Auto-select for independent driver
           if (isIndependentDriver && truckList.length > 0) {
-            setBookingTruckId(truckList[0]._id);
-            setBookingDriverId(user.id);
+            const firstTruckId = truckList[0]._id || truckList[0].id;
+            if (firstTruckId) {
+              setBookingTruckId(firstTruckId);
+            }
+            setBookingDriverId(user?.id || "");
           }
         } catch (err) {
           console.error("Failed to fetch fleet data", err);
@@ -318,9 +321,14 @@ export default function MarketplacePage() {
                 onChange={(e) => setBookingTruckId(e.target.value)}
               >
                 <option value="">Select a truck...</option>
-                {trucks.map(t => (
-                  <option key={t._id} value={t._id}>{t.internalId || t.plateNumber} ({t.type})</option>
-                ))}
+                {trucks.map(t => {
+                  const tid = t._id || t.id;
+                  return (
+                    <option key={tid} value={tid}>
+                      {t.internalId || t.plateNumber} ({t.type})
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
