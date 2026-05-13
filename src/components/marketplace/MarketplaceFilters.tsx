@@ -18,12 +18,18 @@ interface MarketplaceFiltersProps {
 
 const EQUIPMENT_OPTIONS = [
   { value: "", label: "All Equipment" },
-  { value: "Dry Van", label: "Dry Van" },
-  { value: "Flatbed", label: "Flatbed" },
-  { value: "Reefer", label: "Reefer" },
-  { value: "Step Deck", label: "Step Deck" },
-  { value: "Lowboy", label: "Lowboy" },
-  { value: "Tanker", label: "Tanker" },
+  { value: "dry_van", label: "Dry Van" },
+  { value: "flatbed", label: "Flatbed" },
+  { value: "reefer", label: "Reefer" },
+  { value: "step_deck", label: "Step Deck" },
+  { value: "lowboy", label: "Lowboy" },
+  { value: "tanker", label: "Tanker" },
+  { value: "power_only", label: "Power Only" },
+  { value: "sprinter_van", label: "Sprinter Van" },
+  { value: "box_truck", label: "Box Truck" },
+  { value: "hot_shot", label: "Hot Shot" },
+  { value: "heavy_haul", label: "Heavy Haul" },
+  { value: "conestoga", label: "Conestoga" },
 ];
 
 const RADIUS_OPTIONS = [
