@@ -260,22 +260,22 @@ export default function DashboardPage() {
             </h3>
             <div className="space-y-2">
               {[
-                { label: "Posted", value: summary.posted, color: "bg-ink" },
-                { label: "Booked", value: summary.booked, color: "bg-ink" },
+                { label: "Posted", value: summary.posted, color: "bg-blue-500" },
+                { label: "Booked", value: summary.booked, color: "bg-indigo-500" },
                 {
                   label: "In Transit",
                   value: summary.inTransit,
-                  color: "bg-ink",
+                  color: "bg-orange-500",
                 },
                 {
                   label: "Delivered",
                   value: summary.delivered,
-                  color: "bg-ink",
+                  color: "bg-emerald-500",
                 },
                 {
                   label: "Cancelled",
                   value: summary.cancelled,
-                  color: "bg-ink",
+                  color: "bg-rose-500",
                 },
               ].map(({ label, value, color }) => (
                 <div
@@ -284,27 +284,14 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className={cn("h-2 w-2 rounded-full", color)} />
-                    <span className="text-sm text-ink">{label}</span>
+                    <span className="text-sm font-medium text-ink">{label}</span>
                   </div>
-                  <span className="text-sm font-semibold text-ink">
+                  <span className="text-sm font-bold text-ink">
                     {value}
                   </span>
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="rounded-xl border border-hairline bg-surface-card p-5">
-            <div className="mb-3 flex items-center gap-2">
-              <Sparkle size={18} className="text-ink" />
-              <h3 className="text-base font-semibold text-ink">
-                AI Insights
-              </h3>
-            </div>
-            <p className="text-sm text-muted">
-              Post more loads to get AI-powered carrier matching and lane
-              pricing insights.
-            </p>
           </div>
         </div>
       </div>

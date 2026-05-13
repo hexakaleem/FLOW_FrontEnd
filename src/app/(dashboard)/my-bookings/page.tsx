@@ -60,26 +60,6 @@ interface BookingEntry {
   carrierOrgName?: string;
 }
 
-type LoadBrief = {
-  _id: string;
-  origin: { city: string; state: string };
-  destination: { city: string; state: string };
-  truckType: string;
-  status: string;
-  pickupDate: string;
-  deliveryDate: string;
-  rate: number;
-};
-
-type ReqBrief = {
-  _id: string;
-  proposedRate: number | null;
-  status: string;
-  assignedDriver?: string;
-  assignedTruck?: string;
-  carrierOrgName?: string;
-};
-
 const TABS = ["Active", "Pending Bids", "Completed", "Cancelled"];
 
 // ---------------------------------------------------------------------------
@@ -176,58 +156,16 @@ export default function MyBookingsPage() {
   // -----------------------------------------------------------------------
   // Fetch my bookings
   // -----------------------------------------------------------------------
-
   const fetchBookings = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const loadsRes = await api.get("/loads");
-      const loads: LoadBrief[] =
-        loadsRes.data?.data?.loads ?? loadsRes.data?.data ?? [];
-
-      const bookingPromises = loads.map(async (load: LoadBrief) => {
-        try {
-          const bookingsRes = await api.get(
-            `/loads/${load._id}/booking-requests`,
-          );
-          const reqs: ReqBrief[] = bookingsRes.data?.data ?? [];
-          return reqs.map(
-            (req) =>
-              ({
-                _id: req._id,
-                loadId: load._id,
-                status: req.status,
-                proposedRate: req.proposedRate,
-                assignedDriver: req.assignedDriver,
-                assignedTruck: req.assignedTruck,
-                carrierOrgName: req.carrierOrgName,
-                loadDetails: {
-                  _id: load._id,
-                  origin: load.origin,
-                  destination: load.destination,
-                  truckType: load.truckType,
-                  status: load.status,
-                  pickupDate: load.pickupDate,
-                  deliveryDate: load.deliveryDate,
-                },
-                originalRate: load.rate,
-                respondedAt: null,
-                createdAt: "",
-              }) as BookingEntry,
-          );
-        } catch {
-          return [];
-        }
-      });
-
-      const allBookings: BookingEntry[] = (
-        await Promise.all(bookingPromises)
-      ).flat();
-      setBookings(allBookings);
+      const res = await api.get("/marketplace/bookings");
+      setBookings(res.data?.data ?? []);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: { message?: string } } } })
-          ?.response?.data?.error?.message || "Failed to fetch bookings";
+          ?.response?.data?.error?.message || "Failed to load bookings";
       setError(msg);
       toast.error(msg);
     } finally {

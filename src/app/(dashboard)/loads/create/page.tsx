@@ -1112,7 +1112,6 @@ export default function CreateLoadPage() {
                     {form.rateType === "per_mile" ? "Per Mile" : "Flat Rate"}
                   </span>
                 </div>
-                </div>
               </div>
 
               {/* Requirements summary */}

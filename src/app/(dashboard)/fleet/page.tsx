@@ -115,6 +115,10 @@ export default function FleetOverviewPage() {
   const [compliance, setCompliance] = useState<ComplianceRow[]>([]);
   const [isLoadingCompliance, setIsLoadingCompliance] = useState(true);
 
+  // trailers list
+  const [trailers, setTrailers] = useState<any[]>([]);
+  const [isLoadingTrailers, setIsLoadingTrailers] = useState(true);
+
   // ── fetch functions ──────────────────────────────────────────────────────────────────────
 
   const fetchVehicles = async () => {
@@ -156,6 +160,19 @@ export default function FleetOverviewPage() {
     }
   };
 
+  const fetchTrailers = async () => {
+    setIsLoadingTrailers(true);
+    try {
+      const response = await api.get("/fleet/trailers");
+      const data = response.data?.data ?? [];
+      setTrailers(Array.isArray(data) ? data : []);
+    } catch {
+      // silent
+    } finally {
+      setIsLoadingTrailers(false);
+    }
+  };
+
   useEffect(() => {
     fetchVehicles();
     fetchCompliance();
@@ -164,6 +181,8 @@ export default function FleetOverviewPage() {
   useEffect(() => {
     if (activeTab === "Drivers") {
       fetchDrivers();
+    } else if (activeTab === "Trailer") {
+      fetchTrailers();
     }
   }, [activeTab]);
 
@@ -599,15 +618,54 @@ export default function FleetOverviewPage() {
 
       {/* ─── Trailer Tab ────────────────────────────────────────────────────────── */}
       {activeTab === "Trailer" && (
-        <div className="flex flex-col items-center justify-center py-24 text-muted">
-          <Cube size={48} weight="thin" className="mb-4 opacity-40" />
-          <p className="text-sm font-bold ">
-            Trailer management coming soon
-          </p>
-          <p className="text-xs text-muted mt-1">
-            This feature will be available in the next update
-          </p>
-        </div>
+        <>
+          {isLoadingTrailers ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-48 rounded-xl border border-hairline bg-card animate-pulse"
+                />
+              ))}
+            </div>
+          ) : trailers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 text-muted">
+              <Cube size={48} weight="thin" className="mb-4 opacity-40" />
+              <p className="text-sm font-bold ">No trailers in fleet yet</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {trailers.map((t) => (
+                <div
+                  key={t._id}
+                  className="rounded-xl border border-hairline bg-card p-6 shadow-sm"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-soft text-ink">
+                      <Cube size={22} weight="bold" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-ink">
+                        {t.internalId || t._id.slice(-6).toUpperCase()}
+                      </div>
+                      <div className="text-[11px] text-muted">
+                        {t.year} {t.make} {t.model}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="badge badge-pill badge-pill-blue">
+                      {t.type}
+                    </span>
+                    <span className="badge badge-pill badge-pill-default">
+                      {t.length}ft
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
