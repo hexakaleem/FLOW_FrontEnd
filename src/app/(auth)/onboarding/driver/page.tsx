@@ -16,7 +16,7 @@ import {
   MagnifyingGlass,
   Check,
   Gauge,
-  UploadSimple
+  UploadSimple,
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -30,9 +30,9 @@ const authoritySchema = z.object({
 type AuthorityValues = z.infer<typeof authoritySchema>;
 
 const STEPS = [
-  { num: 1, label: 'Authority' },
-  { num: 2, label: 'CDL' },
-  { num: 3, label: 'ID' },
+  { num: 1, label: 'Verify Authority', desc: 'Verify your MC or USDOT number with FMCSA.', icon: IdentificationBadge },
+  { num: 2, label: 'Upload CDL', desc: 'Upload your Commercial Driver\'s License.', icon: Camera },
+  { num: 3, label: 'Government ID', desc: 'Upload your government-issued ID.', icon: IdentificationCard },
 ];
 
 export default function DriverOnboardingPage() {
@@ -99,7 +99,6 @@ export default function DriverOnboardingPage() {
       dispatch(updateOnboardingStatus(true));
       
       if (newToken && user) {
-        const { setCredentials } = await import('@/store/slices/authSlice');
         dispatch(setCredentials({
           user,
           accessToken: newToken,
@@ -120,17 +119,17 @@ export default function DriverOnboardingPage() {
 
   if (isCompleted) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center animate-in fade-in zoom-in duration-500">
-        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success">
-          <CheckCircle size={48} weight="fill" />
+      <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-700">
+        <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-success/10 text-success ring-8 ring-success/5">
+          <CheckCircle size={56} weight="fill" />
         </div>
-        <h2 className="text-2xl font-semibold tracking-tight text-ink">You are all set!</h2>
-        <p className="mt-2 text-body-text font-medium">Welcome to FLOW. Your driver profile is ready.</p>
+        <h2 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl" style={{ letterSpacing: '-0.04em' }}>You&apos;re all set!</h2>
+        <p className="mt-4 text-lg text-body-text font-medium max-w-md">Welcome to FLOW. Your driver profile is ready.</p>
         <button
           onClick={() => window.location.href = '/dashboard'}
-          className="mt-8 inline-flex items-center justify-center gap-2 h-11 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-active transition-colors px-6"
+          className="mt-10 inline-flex items-center justify-center gap-3 h-12 rounded-lg bg-primary text-primary-foreground text-base font-semibold hover:bg-primary-active transition-all px-8 shadow-sm active:scale-95"
         >
-          <Gauge size={20} weight="bold" />
+          <Gauge size={22} weight="bold" />
           Go to Dashboard
         </button>
       </div>
@@ -138,63 +137,78 @@ export default function DriverOnboardingPage() {
   }
 
   return (
-    <div className="w-full max-w-[520px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-8 text-center">
-        <div className="text-[1.8rem] font-semibold text-ink tracking-tight">FLOW</div>
-        <h2 className="mt-2 text-xl font-semibold text-ink">Driver Onboarding</h2>
-        <p className="text-sm text-body-text font-medium">Complete these steps to start driving</p>
-      </div>
-
-      <div className="mb-8 flex items-center justify-center">
-        {STEPS.map((s, i) => (
-          <div key={s.num} className="flex items-center">
-            <div className={cn(
-              "flex flex-col items-center gap-2",
-              step >= s.num ? "text-ink" : "text-muted"
-            )}>
-              <div className={cn(
-                "flex h-9 w-9 items-center justify-center rounded-full border-2 text-sm font-semibold transition-all",
-                step === s.num ? "border-primary bg-primary text-primary-foreground" :
-                step > s.num ? "border-success bg-success text-white" : "border-hairline bg-card"
-              )}>
-                {step > s.num ? <Check size={18} weight="bold" /> : s.num}
+    <div className="flex w-full rounded-2xl border border-hairline bg-card shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-700">
+      
+      {/* Left Sidebar */}
+      <div className="w-[320px] bg-gradient-to-b from-primary/5 to-transparent border-r border-hairline p-8 flex-shrink-0 hidden lg:flex flex-col">
+        <div className="text-[1.4rem] font-bold text-primary tracking-tighter mb-6">FLOW</div>
+        <p className="text-sm text-muted font-medium mb-8 leading-relaxed">Get started by verifying your driver credentials.</p>
+        
+        <div className="flex flex-col gap-0">
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            const isCompleted = step > s.num;
+            const isActive = step === s.num;
+            
+            return (
+              <div key={s.num} className="relative flex gap-4 py-4">
+                {i < STEPS.length - 1 && (
+                  <div className={cn(
+                    "absolute left-[15px] top-[44px] bottom-[-4px] w-[2px]",
+                    isCompleted ? "bg-success" : isActive ? "bg-primary" : "bg-hairline"
+                  )} />
+                )}
+                <div className={cn(
+                  "w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm flex-shrink-0 bg-card relative z-10 transition-all",
+                  isCompleted ? "border-success bg-success text-white" :
+                  isActive ? "border-primary bg-primary text-white" :
+                  "border-hairline text-muted"
+                )}>
+                  {isCompleted ? <Check size={16} weight="bold" /> : <Icon size={16} weight="bold" />}
+                </div>
+                <div className="pt-1">
+                  <h4 className={cn(
+                    "text-sm font-semibold",
+                    isCompleted ? "text-ink" : isActive ? "text-primary" : "text-muted"
+                  )}>{s.label}</h4>
+                  <p className="text-xs text-muted leading-relaxed mt-0.5">{s.desc}</p>
+                </div>
               </div>
-              <span className="text-xs font-medium">{s.label}</span>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div className={cn(
-                "mx-4 mb-6 h-[2px] w-12 rounded-full",
-                step > s.num ? "bg-success" : "bg-hairline"
-              )} />
-            )}
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
 
-      <div className="rounded-xl border border-hairline bg-card p-8">
+      {/* Right Content */}
+      <div className="flex-1 p-10 lg:p-12 overflow-y-auto max-h-[90vh]">
+        
+        {/* STEP 1: AUTHORITY */}
         {step === 1 && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="flex items-center gap-2 text-primary">
-              <IdentificationBadge size={24} weight="bold" />
-              <h3 className="text-lg font-semibold">Verify your authority</h3>
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Step 1 of 3</p>
+              <h2 className="text-2xl font-bold tracking-tight text-ink" style={{ letterSpacing: '-0.02em' }}>Verify your authority</h2>
+              <p className="text-sm text-muted mt-2 leading-relaxed">Your MC or USDOT number is issued by the Federal Motor Carrier Safety Administration (FMCSA). We&apos;ll verify your authority status.</p>
             </div>
-            <p className="text-sm font-medium text-body-text">Your MC or USDOT number is issued by the FMCSA.</p>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="space-y-1.5">
-                <label className="ml-1 text-xs font-medium text-muted">MC or USDOT Number</label>
-                <input
-                  {...authorityForm.register('mcNumber')}
-                  className={cn("h-10 w-full rounded-md border border-hairline bg-canvas px-3.5 py-2 text-sm text-ink outline-none transition-all focus:border-ink focus:ring-1 focus:ring-ink font-medium", authorityForm.formState.errors.mcNumber && "border-danger")}
-                  placeholder="MC-123456"
-                />
+                <label className="text-xs font-medium text-muted">MC Number or USDOT Number</label>
+                <div className="relative">
+                  <IdentificationBadge size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                  <input
+                    {...authorityForm.register('mcNumber')}
+                    className={cn("h-11 w-full rounded-lg border border-hairline bg-canvas pl-11 pr-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium", authorityForm.formState.errors.mcNumber && "border-danger")}
+                    placeholder="MC-123456"
+                  />
+                </div>
               </div>
 
               {!verificationResult && (
                 <button
                   onClick={verifyAuthority}
                   disabled={isVerifying}
-                  className="w-full h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary-active transition-colors text-sm font-semibold inline-flex items-center justify-center gap-2"
+                  className="w-full h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] disabled:opacity-50"
                 >
                   <MagnifyingGlass size={18} weight="bold" />
                   {isVerifying ? 'Verifying...' : 'Verify Now'}
@@ -203,7 +217,7 @@ export default function DriverOnboardingPage() {
 
               {verificationResult && (
                 <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-                  <div className="rounded-xl border border-hairline bg-canvas p-5">
+                  <div className="rounded-xl border border-hairline bg-surface-soft p-5">
                     <div className="mb-4 flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success">
                         <Check size={18} weight="bold" />
@@ -213,88 +227,92 @@ export default function DriverOnboardingPage() {
                     <div className="flex gap-6 flex-wrap">
                       <div>
                         <span className="text-xs font-medium text-muted">Status</span>
-                        <div className="mt-1 badge-pill badge-pill-default">Active</div>
+                        <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">Active</div>
                       </div>
                       <div>
                         <span className="text-xs font-medium text-muted">Insurance</span>
-                        <div className="mt-1 badge-pill badge-pill-default">Valid</div>
+                        <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">Valid</div>
                       </div>
                       <div>
                         <span className="text-xs font-medium text-muted">Safety</span>
-                        <div className="mt-1 badge-pill badge-pill-default">Satisfactory</div>
+                        <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">Satisfactory</div>
                       </div>
                     </div>
                   </div>
                 </div>
               )}
             </div>
+
+            <div className="flex justify-between pt-6 border-t border-hairline">
+              <button onClick={handleBack} className="h-11 px-6 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-semibold inline-flex items-center gap-2">
+                <ArrowLeft size={18} weight="bold" /> Back
+              </button>
+              <button onClick={handleNext} className="h-11 px-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-[0.98]">
+                Save and continue <ArrowRight size={18} weight="bold" />
+              </button>
+            </div>
           </div>
         )}
 
+        {/* STEP 2: CDL */}
         {step === 2 && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="flex items-center gap-2 text-primary">
-              <Camera size={24} weight="bold" />
-              <h3 className="text-lg font-semibold">Upload your CDL</h3>
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Step 2 of 3</p>
+              <h2 className="text-2xl font-bold tracking-tight text-ink" style={{ letterSpacing: '-0.02em' }}>Upload your Commercial Driver&apos;s License</h2>
+              <p className="text-sm text-muted mt-2 leading-relaxed">Take a photo or choose from your gallery. Your CDL must be current and valid.</p>
             </div>
-            <p className="text-sm font-medium text-body-text">Take a photo or choose from your gallery. Both sides preferred.</p>
 
-            <div className="rounded-xl border-2 border-dashed border-hairline p-10 bg-card hover:border-muted transition-colors cursor-pointer text-center group">
-              <div className="mb-4 flex flex-col items-center justify-center text-muted group-hover:text-primary transition-colors">
+            <div className="rounded-xl border-2 border-dashed border-hairline p-12 bg-surface-soft hover:border-muted transition-colors cursor-pointer text-center group">
+              <div className="flex flex-col items-center justify-center text-muted group-hover:text-primary transition-colors">
                 <Camera size={48} weight="regular" />
-                <p className="mt-4 text-sm font-medium">Take photo or upload</p>
+                <p className="mt-4 text-sm font-medium">Take a photo or choose from gallery</p>
                 <p className="mt-2 text-xs font-medium">Accepted: JPG, PNG, PDF</p>
               </div>
+            </div>
+
+            <div className="flex justify-between pt-6 border-t border-hairline">
+              <button onClick={handleBack} className="h-11 px-6 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-semibold inline-flex items-center gap-2">
+                <ArrowLeft size={18} weight="bold" /> Back
+              </button>
+              <button onClick={handleNext} className="h-11 px-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-[0.98]">
+                Upload &amp; continue <ArrowRight size={18} weight="bold" />
+              </button>
             </div>
           </div>
         )}
 
+        {/* STEP 3: GOVERNMENT ID */}
         {step === 3 && (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            <div className="flex items-center gap-2 text-primary">
-              <IdentificationCard size={24} weight="bold" />
-              <h3 className="text-lg font-semibold">Upload Government ID</h3>
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Step 3 of 3</p>
+              <h2 className="text-2xl font-bold tracking-tight text-ink" style={{ letterSpacing: '-0.02em' }}>Upload your Government ID</h2>
+              <p className="text-sm text-muted mt-2 leading-relaxed">A National ID, Passport, or State ID is accepted. This is required for identity verification.</p>
             </div>
-            <p className="text-sm font-medium text-body-text">A National ID, Passport, or State ID is accepted for identity verification.</p>
 
-            <div className="rounded-xl border-2 border-dashed border-hairline p-10 bg-card hover:border-muted transition-colors cursor-pointer text-center group">
-              <div className="mb-4 flex flex-col items-center justify-center text-muted group-hover:text-primary transition-colors">
+            <div className="rounded-xl border-2 border-dashed border-hairline p-12 bg-surface-soft hover:border-muted transition-colors cursor-pointer text-center group">
+              <div className="flex flex-col items-center justify-center text-muted group-hover:text-primary transition-colors">
                 <IdentificationCard size={48} weight="regular" />
-                <p className="mt-4 text-sm font-medium">Take photo or upload</p>
+                <p className="mt-4 text-sm font-medium">Take a photo or choose from gallery</p>
                 <p className="mt-2 text-xs font-medium">Accepted: JPG, PNG, PDF</p>
               </div>
             </div>
+
+            <div className="flex justify-between pt-6 border-t border-hairline">
+              <button onClick={handleBack} className="h-11 px-6 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-semibold inline-flex items-center gap-2">
+                <ArrowLeft size={18} weight="bold" /> Back
+              </button>
+              <button
+                onClick={completeOnboarding}
+                disabled={isLoading}
+                className="h-11 px-8 rounded-lg bg-success text-white hover:bg-success/90 transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-lg disabled:opacity-50 active:scale-[0.98]"
+              >
+                {isLoading ? 'Completing...' : 'Complete Onboarding'} <Check size={18} weight="bold" />
+              </button>
+            </div>
           </div>
         )}
-
-        <div className="mt-10 flex justify-between gap-4">
-          <button
-            onClick={handleBack}
-            className={cn("flex-1 h-10 rounded-md border border-hairline bg-card text-ink hover:bg-surface-soft transition-colors text-sm font-medium inline-flex items-center justify-center gap-2", step === 1 && "opacity-0 pointer-events-none")}
-          >
-            <ArrowLeft size={18} weight="bold" />
-            Back
-          </button>
-
-          {step < 3 ? (
-            <button
-              onClick={handleNext}
-              className="flex-1 h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary-active transition-colors text-sm font-semibold inline-flex items-center justify-center gap-2"
-            >
-              Continue
-              <ArrowRight size={18} weight="bold" />
-            </button>
-          ) : (
-            <button
-              onClick={completeOnboarding}
-              disabled={isLoading}
-              className="flex-1 h-10 rounded-md bg-success text-white hover:bg-success/90 transition-colors text-sm font-semibold inline-flex items-center justify-center gap-2"
-            >
-              {isLoading ? 'Completing...' : 'Complete Onboarding'}
-              <Check size={18} weight="bold" />
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -25,7 +25,8 @@ import {
   WarningCircle,
   Truck,
   CaretDown,
-  LockKey
+  LockKey,
+  Buildings,
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -61,9 +62,9 @@ type BusinessValues = z.infer<typeof businessSchema>;
 type AuthorityValues = z.infer<typeof authoritySchema>;
 
 const STEPS = [
-  { num: 1, label: 'Business', desc: 'Company Details' },
-  { num: 2, label: 'Authority', desc: 'FMCSA Verification' },
-  { num: 3, label: 'Financials', desc: 'Payout Methods' },
+  { num: 1, label: 'Business Profile', desc: 'Add your business details to start using FLOW.', icon: Buildings },
+  { num: 2, label: 'Authority Verification', desc: 'Verify your broker authority with FMCSA.', icon: Certificate },
+  { num: 3, label: 'Payment Setup', desc: 'Connect your payment account for transactions.', icon: CreditCard },
 ];
 
 const US_STATES = [
@@ -256,14 +257,11 @@ export default function BrokerOnboardingPage() {
       const prefsRes = await api.patch('/auth/onboarding/prefs', {});
       const newToken = prefsRes.data?.data?.accessToken || localStorage.getItem('token') || '';
       
-      // Update global storage
       localStorage.setItem('token', newToken);
       document.cookie = `accessToken=${newToken}; path=/; max-age=604800; SameSite=Lax`;
 
-      // Update Redux state with full credentials to ensure seamless transition
       dispatch(updateOnboardingStatus(true));
       if (newToken && user) {
-        // We setCredentials to update the token in Redux, preventing stale 403s on next navigation
         dispatch(setCredentials({
           user,
           accessToken: newToken,
@@ -287,8 +285,8 @@ export default function BrokerOnboardingPage() {
         <div className="mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-success/10 text-success ring-8 ring-success/5">
           <CheckCircle size={56} weight="fill" />
         </div>
-        <h2 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl" style={{ letterSpacing: '-0.04em' }}>Welcome to FLOW</h2>
-        <p className="mt-4 text-lg text-body-text font-medium max-w-md">Your brokerage is now active. You can start posting loads and inviting your team immediately.</p>
+        <h2 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl" style={{ letterSpacing: '-0.04em' }}>You&apos;re all set!</h2>
+        <p className="mt-4 text-lg text-body-text font-medium max-w-md">Welcome to FLOW. Your brokerage is ready to post loads.</p>
         <button
           onClick={() => {
             setIsNavigating(true);
@@ -298,7 +296,7 @@ export default function BrokerOnboardingPage() {
           className="mt-10 inline-flex items-center justify-center gap-3 h-12 rounded-lg bg-primary text-primary-foreground text-base font-semibold hover:bg-primary-active transition-all px-8 shadow-sm active:scale-95 disabled:opacity-50"
         >
           <Gauge size={22} weight="bold" />
-          {isNavigating ? 'Redirecting...' : 'Enter Dashboard'}
+          {isNavigating ? 'Redirecting...' : 'Go to Dashboard'}
         </button>
       </div>
     );
@@ -306,81 +304,84 @@ export default function BrokerOnboardingPage() {
 
   return (
     <TooltipProvider delay={200}>
-      <div className="w-full max-w-[680px] py-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
-        {/* Brand & Progress */}
-        <div className="mb-10 text-center">
-          <div className="text-[1.2rem] font-bold text-ink tracking-tighter mb-8 opacity-40">FLOW</div>
+      <div className="flex w-full rounded-2xl border border-hairline bg-card shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-700">
+        
+        {/* Left Sidebar */}
+        <div className="w-[320px] bg-gradient-to-b from-primary/5 to-transparent border-r border-hairline p-8 flex-shrink-0 hidden lg:flex flex-col">
+          <div className="text-[1.4rem] font-bold text-primary tracking-tighter mb-6">FLOW</div>
+          <p className="text-sm text-muted font-medium mb-8 leading-relaxed">Get started by setting up your brokerage account.</p>
           
-          <div className="flex items-center justify-between px-4 max-w-md mx-auto">
-            {STEPS.map((s, i) => (
-              <div key={s.num} className="flex flex-col items-center relative group">
-                <div className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 z-10",
-                  step === s.num ? "border-primary bg-primary text-primary-foreground ring-4 ring-primary/10 shadow-sm" :
-                  step > s.num ? "border-ink bg-ink text-white" : "border-hairline bg-canvas text-muted group-hover:border-muted"
-                )}>
-                  {step > s.num ? <Check size={20} weight="bold" /> : s.num}
-                </div>
-                <div className="absolute top-12 whitespace-nowrap">
-                  <span className={cn(
-                    "text-[10px] uppercase tracking-widest font-bold transition-colors",
-                    step === s.num ? "text-ink" : "text-muted"
-                  )}>
-                    {s.label}
-                  </span>
-                </div>
-                {i < STEPS.length - 1 && (
+          <div className="flex flex-col gap-0">
+            {STEPS.map((s, i) => {
+              const Icon = s.icon;
+              const isCompleted = step > s.num;
+              const isActive = step === s.num;
+              const isPending = step < s.num;
+              
+              return (
+                <div key={s.num} className="relative flex gap-4 py-4">
+                  {i < STEPS.length - 1 && (
+                    <div className={cn(
+                      "absolute left-[15px] top-[44px] bottom-[-4px] w-[2px]",
+                      isCompleted ? "bg-success" : isActive ? "bg-primary" : "bg-hairline"
+                    )} />
+                  )}
                   <div className={cn(
-                    "absolute left-10 top-5 h-[2px] w-[calc(100vw/3)] sm:w-32 rounded-full -z-0",
-                    step > s.num ? "bg-ink" : "bg-hairline"
-                  )} />
-                )}
-              </div>
-            ))}
+                    "w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm flex-shrink-0 bg-card relative z-10 transition-all",
+                    isCompleted ? "border-success bg-success text-white" :
+                    isActive ? "border-primary bg-primary text-white" :
+                    "border-hairline text-muted"
+                  )}>
+                    {isCompleted ? <Check size={16} weight="bold" /> : <Icon size={16} weight="bold" />}
+                  </div>
+                  <div className="pt-1">
+                    <h4 className={cn(
+                      "text-sm font-semibold",
+                      isCompleted ? "text-ink" : isActive ? "text-primary" : "text-muted"
+                    )}>{s.label}</h4>
+                    <p className="text-xs text-muted leading-relaxed mt-0.5">{s.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Content Card */}
-        <div className="mt-16 rounded-2xl border border-hairline bg-canvas p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)]">
+        {/* Right Content */}
+        <div className="flex-1 p-10 lg:p-12 overflow-y-auto max-h-[90vh]">
           
           {/* STEP 1: BUSINESS */}
           {step === 1 && (
             <div id="step1-form" ref={step1Ref} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
               <div>
-                <div className="flex items-center gap-3 text-ink mb-2">
-                  <div className="p-2 bg-surface-soft rounded-lg">
-                    <Briefcase size={22} weight="bold" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>Business Profile</h3>
-                </div>
-                <p className="text-sm font-medium text-muted">Identify your brokerage for load posting and financial verification.</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Step 1 of 3</p>
+                <h2 className="text-2xl font-bold tracking-tight text-ink" style={{ letterSpacing: '-0.02em' }}>Create your business profile</h2>
+                <p className="text-sm text-muted mt-2 leading-relaxed">Set up your brokerage profile to start posting and managing loads. This information will be used for all your communications.</p>
               </div>
 
-              <div className="grid gap-6">
-                {/* Legal Name */}
-                <div className="space-y-2" data-error={!!businessForm.formState.errors.companyName}>
-                  <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">Legal Company Name</label>
+              <div className="grid gap-5">
+                <div className="space-y-1.5" data-error={!!businessForm.formState.errors.companyName}>
+                  <label className="text-xs font-medium text-muted">Company Name</label>
                   <input
                     {...businessForm.register('companyName')}
                     className={cn(
-                      "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-ink focus:ring-1 focus:ring-ink font-medium shadow-sm",
-                      businessForm.formState.errors.companyName ? "border-error focus:ring-error" : "border-hairline"
+                      "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary font-medium",
+                      businessForm.formState.errors.companyName ? "border-danger focus:ring-danger" : "border-hairline"
                     )}
-                    placeholder="Global Logistics Partners LLC"
+                    placeholder="e.g., Smith Brokerage LLC"
                   />
                   {businessForm.formState.errors.companyName && (
-                    <p className="text-[10px] text-error font-bold mt-1 ml-1 uppercase">{businessForm.formState.errors.companyName.message}</p>
+                    <p className="text-[10px] text-danger font-bold mt-1">{businessForm.formState.errors.companyName.message}</p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Type */}
-                  <div className="space-y-2 relative">
-                    <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">Business Type</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5 relative">
+                    <label className="text-xs font-medium text-muted">Business Type</label>
                     <div className="relative">
                       <select
                         {...businessForm.register('businessType')}
-                        className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium shadow-sm focus:border-ink transition-all"
+                        className="h-11 w-full rounded-lg border border-hairline bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium focus:border-primary transition-all"
                       >
                         <option>LLC</option>
                         <option>Corporation</option>
@@ -390,103 +391,73 @@ export default function BrokerOnboardingPage() {
                       <CaretDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                     </div>
                   </div>
-                  {/* EIN */}
-                  <div className="space-y-2" data-error={!!businessForm.formState.errors.ein}>
-                    <div className="flex items-center gap-1.5">
-                      <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">Tax EIN</label>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info size={14} className="text-muted hover:text-ink cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>9-digit federal identification</TooltipContent>
-                      </Tooltip>
-                    </div>
+                  <div className="space-y-1.5" data-error={!!businessForm.formState.errors.ein}>
+                    <label className="text-xs font-medium text-muted">EIN (Employer Identification Number)</label>
                     <input
                       {...businessForm.register('ein')}
                       className={cn(
-                        "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-ink focus:ring-1 focus:ring-ink font-medium shadow-sm",
-                        businessForm.formState.errors.ein ? "border-error focus:ring-error" : "border-hairline"
+                        "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary font-medium",
+                        businessForm.formState.errors.ein ? "border-danger focus:ring-danger" : "border-hairline"
                       )}
                       placeholder="XX-XXXXXXX"
                     />
                     {businessForm.formState.errors.ein && (
-                      <p className="text-[10px] text-error font-bold mt-1 ml-1 uppercase">{businessForm.formState.errors.ein.message}</p>
+                      <p className="text-[10px] text-danger font-bold mt-1">{businessForm.formState.errors.ein.message}</p>
                     )}
                   </div>
                 </div>
 
-                {/* HQ Address */}
-                <div className="space-y-2" data-error={!!businessForm.formState.errors.street}>
-                  <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">Street Address</label>
+                <div className="space-y-1.5" data-error={!!businessForm.formState.errors.street}>
+                  <label className="text-xs font-medium text-muted">Street Address</label>
                   <input
                     {...businessForm.register('street')}
                     className={cn(
-                      "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-ink font-medium shadow-sm",
-                      businessForm.formState.errors.street ? "border-error" : "border-hairline"
+                      "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium",
+                      businessForm.formState.errors.street ? "border-danger" : "border-hairline"
                     )}
-                    placeholder="100 West Washington St."
+                    placeholder="123 Broker Ave"
                   />
                   {businessForm.formState.errors.street && (
-                    <p className="text-[10px] text-error font-bold mt-1 ml-1 uppercase">{businessForm.formState.errors.street.message}</p>
+                    <p className="text-[10px] text-danger font-bold mt-1">{businessForm.formState.errors.street.message}</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-1 space-y-2" data-error={!!businessForm.formState.errors.city}>
-                    <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">City</label>
-                    <input {...businessForm.register('city')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm", businessForm.formState.errors.city ? "border-error" : "border-hairline")} placeholder="Chicago" />
+                  <div className="space-y-1.5" data-error={!!businessForm.formState.errors.city}>
+                    <label className="text-xs font-medium text-muted">City</label>
+                    <input {...businessForm.register('city')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-primary font-medium", businessForm.formState.errors.city ? "border-danger" : "border-hairline")} placeholder="Chicago" />
                   </div>
-                  <div className="space-y-2 relative" data-error={!!businessForm.formState.errors.state}>
-                    <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">State</label>
+                  <div className="space-y-1.5 relative" data-error={!!businessForm.formState.errors.state}>
+                    <label className="text-xs font-medium text-muted">State</label>
                     <div className="relative">
-                      <select {...businessForm.register('state')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium shadow-sm focus:border-ink", businessForm.formState.errors.state ? "border-error" : "border-hairline")}>
+                      <select {...businessForm.register('state')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none appearance-none font-medium focus:border-primary", businessForm.formState.errors.state ? "border-danger" : "border-hairline")}>
                         {US_STATES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                       <CaretDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
                     </div>
                   </div>
-                  <div className="space-y-2" data-error={!!businessForm.formState.errors.zip}>
-                    <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">ZIP</label>
-                    <input {...businessForm.register('zip')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm", businessForm.formState.errors.zip ? "border-error" : "border-hairline")} placeholder="60601" />
+                  <div className="space-y-1.5" data-error={!!businessForm.formState.errors.zip}>
+                    <label className="text-xs font-medium text-muted">ZIP</label>
+                    <input {...businessForm.register('zip')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-primary font-medium", businessForm.formState.errors.zip ? "border-danger" : "border-hairline")} placeholder="60601" />
                   </div>
                 </div>
 
-                {/* Phone */}
-                <div className="space-y-2" data-error={!!businessForm.formState.errors.phone}>
-                  <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">Business Phone</label>
-                  <input {...businessForm.register('phone')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-ink font-medium shadow-sm", businessForm.formState.errors.phone ? "border-error" : "border-hairline")} placeholder="+1 (312) 555-0123" />
+                <div className="space-y-1.5" data-error={!!businessForm.formState.errors.phone}>
+                  <label className="text-xs font-medium text-muted">Business Phone</label>
+                  <input {...businessForm.register('phone')} className={cn("h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none focus:border-primary font-medium", businessForm.formState.errors.phone ? "border-danger" : "border-hairline")} placeholder="+1 (555) 000-0000" />
                   {businessForm.formState.errors.phone && (
-                    <p className="text-[10px] text-error font-bold mt-1 ml-1 uppercase">{businessForm.formState.errors.phone.message}</p>
+                    <p className="text-[10px] text-danger font-bold mt-1">{businessForm.formState.errors.phone.message}</p>
                   )}
                 </div>
+              </div>
 
-                {/* Logo Upload */}
-                <div className="pt-2">
-                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-                  {logoPreview ? (
-                    <div className="flex items-center gap-5 rounded-xl border border-hairline bg-surface-card p-4 animate-in slide-in-from-top-1 duration-300">
-                      <img src={logoPreview} alt="Preview" className="h-14 w-14 rounded-lg object-cover border border-hairline shadow-sm bg-white" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-ink truncate">{logoFile?.name}</div>
-                        <div className="text-[10px] font-bold text-muted uppercase tracking-wider">Ready to upload</div>
-                      </div>
-                      <button onClick={removeLogo} className="p-2 text-muted hover:text-error transition-colors"><X size={18} weight="bold" /></button>
-                    </div>
-                  ) : (
-                    <div onClick={() => fileInputRef.current?.click()} className="flex items-center gap-4 rounded-xl border border-hairline bg-surface-card p-5 group cursor-pointer hover:bg-white hover:border-ink/20 transition-all duration-300">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-canvas border border-hairline text-muted group-hover:text-ink transition-colors">
-                        <Camera size={24} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-ink">Brokerage Logo</div>
-                        <p className="text-[11px] font-medium text-muted">Upload high-res PNG or SVG (Optional)</p>
-                      </div>
-                      <div className="ml-auto opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-                        <ArrowRight size={18} className="text-ink" />
-                      </div>
-                    </div>
-                  )}
-                </div>
+              <div className="flex justify-between pt-6 border-t border-hairline">
+                <button onClick={handleBack} className="h-11 px-6 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-semibold inline-flex items-center gap-2">
+                  <ArrowLeft size={18} weight="bold" /> Back
+                </button>
+                <button onClick={handleNext} className="h-11 px-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-[0.98]">
+                  Save and continue <ArrowRight size={18} weight="bold" />
+                </button>
               </div>
             </div>
           )}
@@ -495,55 +466,55 @@ export default function BrokerOnboardingPage() {
           {step === 2 && (
             <div id="step2-form" ref={step2Ref} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
               <div>
-                <div className="flex items-center gap-3 text-ink mb-2">
-                  <div className="p-2 bg-surface-soft rounded-lg">
-                    <Certificate size={22} weight="bold" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>Operating Authority</h3>
-                </div>
-                <p className="text-sm font-medium text-muted">Real-time FMCSA verification is required to activate your broker profile.</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Step 2 of 3</p>
+                <h2 className="text-2xl font-bold tracking-tight text-ink" style={{ letterSpacing: '-0.02em' }}>Verify your Broker Authority</h2>
+                <p className="text-sm text-muted mt-2 leading-relaxed">Enter your MC number. We&apos;ll verify it has active Broker Authority with FMCSA to ensure compliance.</p>
               </div>
 
-              <div className="space-y-6">
-                <div className="space-y-2" data-error={!!authorityForm.formState.errors.mcNumber}>
-                  <label className="text-[11px] uppercase tracking-wider font-bold text-muted ml-0.5">MC Number</label>
-                  <div className="flex gap-3">
-                    <input
-                      {...authorityForm.register('mcNumber')}
-                      className={cn(
-                        "h-11 flex-1 rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-ink font-medium shadow-sm",
-                        authorityForm.formState.errors.mcNumber ? "border-error" : "border-hairline"
-                      )}
-                      placeholder="MC-123456"
-                      disabled={isVerifying || verificationResult === 'success'}
-                    />
-                    <button
-                      onClick={verifyAuthority}
-                      disabled={isVerifying || verificationResult === 'success'}
-                      className="h-11 px-8 rounded-lg bg-ink text-white text-xs font-bold hover:bg-black transition-all disabled:opacity-50 shadow-sm active:scale-95"
-                    >
-                      {isVerifying ? 'Verifying...' : verificationResult === 'success' ? 'Verified' : 'Verify'}
-                    </button>
-                  </div>
+              <div className="space-y-5">
+                <div className="space-y-1.5" data-error={!!authorityForm.formState.errors.mcNumber}>
+                  <label className="text-xs font-medium text-muted">MC Number</label>
+                  <input
+                    {...authorityForm.register('mcNumber')}
+                    className={cn(
+                      "h-11 w-full rounded-lg border bg-canvas px-4 text-sm text-ink outline-none transition-all focus:border-primary font-medium",
+                      authorityForm.formState.errors.mcNumber ? "border-danger" : "border-hairline"
+                    )}
+                    placeholder="MC-XXXXXXX"
+                    value={authorityForm.getValues('mcNumber')}
+                    disabled={isVerifying || verificationResult === 'success'}
+                  />
                 </div>
+
+                <button
+                  onClick={verifyAuthority}
+                  disabled={isVerifying || verificationResult === 'success'}
+                  className="w-full h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] disabled:opacity-50"
+                >
+                  <MagnifyingGlass size={18} weight="bold" />
+                  {isVerifying ? 'Verifying...' : verificationResult === 'success' ? 'Verified' : 'Verify Now'}
+                </button>
 
                 {verificationResult === 'success' && (
                   <div className="animate-in fade-in zoom-in duration-500">
-                    <div className="rounded-xl border border-success/30 bg-success/5 p-6 space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success text-white">
-                          <Check size={16} weight="bold" />
+                    <div className="rounded-xl border border-hairline bg-surface-soft p-5 space-y-3">
+                      <h4 className="text-sm font-semibold text-ink">FMCSA Verification Result</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted">Legal Name</span>
+                          <strong>Smith Brokerage LLC</strong>
                         </div>
-                        <div className="text-sm font-bold text-success">Credentials Verified</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-6 pt-2">
-                        <div>
-                          <div className="text-[10px] uppercase font-bold text-success/70 tracking-wider">Status</div>
-                          <div className="text-sm font-bold text-success">ACTIVE & AUTHORIZED</div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted">Authority Status</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">Active</span>
                         </div>
-                        <div>
-                          <div className="text-[10px] uppercase font-bold text-success/70 tracking-wider">Bond Info</div>
-                          <div className="text-sm font-bold text-success">$75,000 FILED</div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted">Authority Type</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">Broker</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted">Bond/Trust</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/10 text-success text-xs font-semibold">$75,000 Active</span>
                         </div>
                       </div>
                     </div>
@@ -552,33 +523,29 @@ export default function BrokerOnboardingPage() {
 
                 {verificationResult === 'mismatch' && (
                   <div className="animate-in fade-in zoom-in duration-500">
-                    <div className="rounded-xl border border-warning/30 bg-warning/5 p-6 space-y-4">
-                      <div className="flex items-start gap-4">
-                        <WarningCircle size={22} className="text-warning mt-1 shrink-0" weight="fill" />
-                        <div className="space-y-3">
-                          <div>
-                            <div className="text-sm font-bold text-warning">Type Mismatch Detected</div>
-                            <p className="text-[11px] font-medium text-warning/80 mt-1">This MC number belongs to a Carrier authority. If you are a carrier, please switch roles.</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <button onClick={() => router.push('/onboarding/carrier')} className="px-3 py-1.5 bg-warning text-white text-[10px] font-bold rounded-md hover:bg-warning/90 transition-all">Switch to Carrier</button>
-                            <button onClick={() => setVerificationResult(null)} className="px-3 py-1.5 border border-warning/30 text-warning text-[10px] font-bold rounded-md hover:bg-warning/10 transition-all">Try Again</button>
-                          </div>
-                        </div>
+                    <div className="rounded-xl border border-warning/30 bg-warning/5 p-5 space-y-3">
+                      <h4 className="text-sm font-semibold text-warning">Authority Type Mismatch</h4>
+                      <p className="text-xs text-muted leading-relaxed">This MC number has <strong>Carrier authority</strong>, not Broker authority. Would you like to register as a Carrier instead?</p>
+                      <div className="flex gap-2">
+                        <button onClick={() => router.push('/onboarding/carrier')} className="px-3 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-md hover:bg-primary-active transition-all inline-flex items-center gap-1">
+                          <Truck size={14} /> Switch to Carrier
+                        </button>
+                        <button onClick={() => setVerificationResult(null)} className="px-3 py-1.5 border border-hairline text-muted text-xs font-semibold rounded-md hover:bg-surface-soft transition-all inline-flex items-center gap-1">
+                          <ArrowLeft size={14} weight="bold" /> Try Different MC
+                        </button>
                       </div>
                     </div>
                   </div>
                 )}
+              </div>
 
-                <div className="rounded-xl border border-hairline bg-surface-card p-5 flex items-start gap-4">
-                  <div className="mt-1 p-1 bg-ink/5 rounded-md">
-                    <Info size={16} className="text-ink" weight="bold" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-ink">Compliance Notice</p>
-                    <p className="text-[11px] leading-relaxed font-medium text-muted">FLOW maintains strict adherence to MAP-21 requirements. All brokers must have active BOC-3 filings and a valid surety bond.</p>
-                  </div>
-                </div>
+              <div className="flex justify-between pt-6 border-t border-hairline">
+                <button onClick={handleBack} className="h-11 px-6 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-semibold inline-flex items-center gap-2">
+                  <ArrowLeft size={18} weight="bold" /> Back
+                </button>
+                <button onClick={handleNext} className="h-11 px-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary-active transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-sm active:scale-[0.98]">
+                  Save and continue <ArrowRight size={18} weight="bold" />
+                </button>
               </div>
             </div>
           )}
@@ -587,120 +554,66 @@ export default function BrokerOnboardingPage() {
           {step === 3 && (
             <div id="step3-form" ref={step3Ref} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
               <div>
-                <div className="flex items-center gap-3 text-ink mb-2">
-                  <div className="p-2 bg-surface-soft rounded-lg">
-                    <CreditCard size={22} weight="bold" />
-                  </div>
-                  <h3 className="text-xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>Financial Setup</h3>
-                </div>
-                <p className="text-sm font-medium text-muted">Connect your payout account to facilitate load settlements and platform fees.</p>
+                <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Step 3 of 3</p>
+                <h2 className="text-2xl font-bold tracking-tight text-ink" style={{ letterSpacing: '-0.02em' }}>Connect your payment account</h2>
+                <p className="text-sm text-muted mt-2 leading-relaxed">FLOW uses Stripe to process all payments securely. As a broker, you&apos;ll make payments through this account.</p>
               </div>
 
-              <div className="py-12 flex flex-col items-center justify-center gap-8 border border-hairline border-dashed rounded-2xl bg-surface-card overflow-hidden">
-                <div className="flex items-center gap-6 animate-in slide-in-from-bottom-2 duration-500">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-[#635BFF] text-3xl font-black text-white shadow-lg transform -rotate-3">S</div>
-                  <div className="h-0.5 w-12 bg-hairline relative">
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-canvas p-1 rounded-full border border-hairline">
-                       <LinkSimple size={14} className="text-muted" />
-                     </div>
-                  </div>
-                  <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-ink text-white text-3xl shadow-lg ring-4 ring-ink/5 transform rotate-3">
-                    <Bank size={32} weight="fill" />
-                  </div>
+              <div className="flex items-center justify-center gap-5 mb-8">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#635BFF] text-2xl font-black text-white shadow-lg">S</div>
+                <div className="text-muted"><LinkSimple size={24} weight="bold" /></div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary text-2xl shadow-lg">
+                  <Bank size={28} weight="fill" />
                 </div>
+              </div>
 
-                {!stripeConnected ? (
-                  <div className="w-full px-10 text-center space-y-4">
-                    <button
-                      onClick={() => { 
-                        setIsLoading(true);
-                        setTimeout(() => {
-                          setStripeConnected(true); 
-                          setIsLoading(false);
-                          toast.success('Stripe Linked Successfully'); 
-                        }, 1200);
-                      }}
-                      className="w-full h-12 rounded-lg bg-[#635BFF] text-white text-sm font-bold hover:bg-[#5851e5] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      {isLoading ? 'Redirecting to Stripe...' : 'Link Stripe Account'}
-                    </button>
-                    <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-muted uppercase tracking-widest">
-                      <LockKey size={12} weight="bold" />
-                      Secure 256-bit AES Encryption
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full px-10 animate-in zoom-in duration-500">
-                    <div className="rounded-xl border-2 border-success bg-white p-5 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 right-0 p-1 bg-success text-white rounded-bl-lg"><Check size={12} weight="bold" /></div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success/10 text-success">
-                          <CheckCircle size={24} weight="fill" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-bold text-ink">Account Connected</div>
-                          <div className="text-xs font-bold text-muted tracking-tight">Chase Business &bull;&bull;&bull;&bull;8812</div>
-                        </div>
-                        <button onClick={() => setStripeConnected(false)} className="text-[10px] font-bold text-muted hover:text-error transition-colors uppercase tracking-wider underline underline-offset-4">Reset</button>
+              {!stripeConnected ? (
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      setIsLoading(true);
+                      setTimeout(() => {
+                        setStripeConnected(true);
+                        setIsLoading(false);
+                        toast.success('Stripe Linked Successfully');
+                      }, 1200);
+                    }}
+                    className="w-full h-12 rounded-lg bg-[#635BFF] text-white text-sm font-bold hover:bg-[#5851e5] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? 'Redirecting to Stripe...' : 'Connect with Stripe'}
+                  </button>
+                  <p className="text-center text-xs font-medium text-muted">You&apos;ll be redirected to Stripe to complete setup</p>
+                </div>
+              ) : (
+                <div className="animate-in zoom-in duration-500">
+                  <div className="rounded-xl border border-hairline bg-surface-soft p-5">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-success/10 text-success">
+                        <CheckCircle size={20} weight="fill" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-ink">Stripe Connected</div>
+                        <div className="text-xs font-medium text-muted">Chase Business &bull;&bull;&bull;&bull;8812</div>
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
-
-              <div className="rounded-xl border border-hairline bg-surface-soft p-5">
-                <h4 className="text-[11px] font-bold text-muted uppercase tracking-widest mb-3">PROFILE SUMMARY</h4>
-                <div className="grid grid-cols-2 gap-y-3 text-[12px]">
-                  <div className="text-muted font-medium">Company</div>
-                  <div className="text-ink font-bold truncate">{businessForm.getValues('companyName')}</div>
-                  <div className="text-muted font-medium">MC Authority</div>
-                  <div className="text-ink font-bold">{authorityForm.getValues('mcNumber')}</div>
-                  <div className="text-muted font-medium">Verification</div>
-                  <div className="text-success font-bold flex items-center gap-1.5"><CheckCircle size={14} weight="fill" /> COMPLETE</div>
                 </div>
+              )}
+
+              <div className="flex justify-between pt-6 border-t border-hairline">
+                <button onClick={handleBack} className="h-11 px-6 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-semibold inline-flex items-center gap-2">
+                  <ArrowLeft size={18} weight="bold" /> Back
+                </button>
+                <button
+                  onClick={completeOnboarding}
+                  disabled={isLoading || !stripeConnected}
+                  className="h-11 px-8 rounded-lg bg-success text-white hover:bg-success/90 transition-all text-sm font-semibold inline-flex items-center gap-2 shadow-lg disabled:opacity-50 active:scale-[0.98]"
+                >
+                  {isLoading ? 'Finalizing...' : 'Complete Onboarding'} <Check size={18} weight="bold" />
+                </button>
               </div>
             </div>
           )}
-
-          {/* Footer Actions */}
-          <div className="mt-12 pt-8 border-t border-hairline flex flex-col sm:flex-row justify-between gap-4">
-            <button
-              onClick={handleBack}
-              className={cn(
-                "order-2 sm:order-1 h-11 px-8 rounded-lg border border-hairline bg-canvas text-ink hover:bg-surface-soft transition-all text-sm font-bold inline-flex items-center justify-center gap-2",
-                step === 1 && "opacity-0 pointer-events-none"
-              )}
-            >
-              <ArrowLeft size={18} weight="bold" />
-              Back
-            </button>
-
-            {step < 3 ? (
-              <button
-                onClick={handleNext}
-                className="order-1 sm:order-2 h-11 px-10 rounded-lg bg-ink text-white hover:bg-black transition-all text-sm font-bold inline-flex items-center justify-center gap-2 shadow-md active:scale-[0.98]"
-              >
-                Continue
-                <ArrowRight size={18} weight="bold" />
-              </button>
-            ) : (
-              <button
-                onClick={completeOnboarding}
-                disabled={isLoading || !stripeConnected}
-                className="order-1 sm:order-2 h-11 px-10 rounded-lg bg-success text-white hover:bg-success/90 transition-all text-sm font-bold inline-flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 active:scale-[0.98]"
-              >
-                {isLoading ? 'Finalizing Profile...' : 'Complete Setup'}
-                <Check size={18} weight="bold" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Footer Info */}
-        <div className="mt-8 text-center">
-          <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] opacity-60">
-            End-to-End Encrypted &bull; PCI DSS Compliant &bull; FLOW 2026
-          </p>
         </div>
       </div>
     </TooltipProvider>
