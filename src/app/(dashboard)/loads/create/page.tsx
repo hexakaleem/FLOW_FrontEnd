@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { useAppSelector } from "@/store/hooks";
 import PermissionGate from "@/components/PermissionGate";
 import { LocationAutocomplete } from "@/components/ui/LocationAutocomplete";
-import { ChatBubbleOvalLeft, ChatBubbleOvalLeftEllipsis, PaperPlaneRight, Robot, XCircle } from "@phosphor-icons/react";
+import { ChatCircleText, PaperPlaneRight, Robot, XCircle } from "@phosphor-icons/react";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -261,96 +261,109 @@ export default function CreateLoadPage() {
   };
 
   // -----------------------------------------------------------------------
-  // AI Chat Assistant
+  // AI Chat Assistant (Backend-powered)
   // -----------------------------------------------------------------------
 
-  const AI_QUESTIONS = [
-    { key: "title", prompt: "What's a short title or reference for this load? (e.g., 'Produce to Dallas')", parse: (v: string) => ({ title: v }) },
-    { key: "commodity", prompt: "What commodity are you shipping?", parse: (v: string) => ({ commodity: v }) },
-    { key: "equipmentType", prompt: "What equipment type is needed? (Flatbed, Dry Van, Reefer, Step Deck, Lowboy, Tanker)", parse: (v: string) => ({ equipmentType: v }) },
-    { key: "weight", prompt: "What's the total weight in lbs?", parse: (v: string) => ({ weight: v.replace(/[^0-9]/g, "") }) },
-    { key: "category", prompt: "Is this Full Truckload or LTL?", parse: (v: string) => ({ category: v.toLowerCase().includes("ltl") ? "LTL" : "Full Truckload" }) },
-    { key: "origin", prompt: "Where is the pickup location? (City, State)", parse: (v: string) => {
-      const parts = v.split(",").map(s => s.trim());
-      return { originCity: parts[0] || "", originState: (parts[1] || "").toUpperCase().slice(0, 2) };
-    }},
-    { key: "dest", prompt: "Where is the delivery location? (City, State)", parse: (v: string) => {
-      const parts = v.split(",").map(s => s.trim());
-      return { destCity: parts[0] || "", destState: (parts[1] || "").toUpperCase().slice(0, 2) };
-    }},
-    { key: "pickupDate", prompt: "What's the pickup date? (e.g., 2025-01-15)", parse: (v: string) => ({ pickupDate: v }) },
-    { key: "deliveryDate", prompt: "What's the delivery date? (e.g., 2025-01-18)", parse: (v: string) => ({ deliveryDate: v }) },
-    { key: "rate", prompt: "What rate are you offering? (just the number, e.g., 2500)", parse: (v: string) => ({ rate: v.replace(/[^0-9.]/g, "") }) },
-    { key: "rateType", prompt: "Is this a Flat Rate or Per Mile rate?", parse: (v: string) => ({ rateType: v.toLowerCase().includes("mile") ? "per_mile" : "flat" }) },
-    { key: "notes", prompt: "Any special notes for the carrier? (type 'skip' to leave blank)", parse: (v: string) => ({ notesToCarrier: v.toLowerCase() === "skip" ? "" : v }) },
-  ];
+  const [aiSessionId, setAiSessionId] = useState<string>("");
+  const [aiIsLoading, setAiIsLoading] = useState(false);
+  const [aiIsComplete, setAiIsComplete] = useState(false);
 
-  const startAiChat = () => {
+  const startAiChat = async () => {
     setAiMode(true);
-    setAiStep(0);
-    setAiCollected({});
-    setChatMessages([{ role: "ai", text: "Hi! I'll help you create a load. Let's go step by step.\n\nWhat's a short title or reference for this load? (e.g., 'Produce to Dallas')" }]);
+    setAiIsLoading(true);
+    try {
+      const res = await api.post("/loads/ai-chat/start");
+      const data = res.data.data;
+      setAiSessionId(data.sessionId);
+      setAiStep(data.step);
+      setAiCollected(data.collected);
+      setAiIsComplete(data.isComplete);
+      setChatMessages([{ role: "ai", text: data.message }]);
+    } catch {
+      toast.error("Failed to start AI assistant");
+      setAiMode(false);
+    } finally {
+      setAiIsLoading(false);
+    }
   };
 
   const exitAiChat = () => {
     setAiMode(false);
     setChatMessages([]);
+    setAiSessionId("");
     setAiStep(0);
     setAiCollected({});
+    setAiIsComplete(false);
   };
 
-  const sendChatMessage = () => {
-    if (!chatInput.trim()) return;
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || !aiSessionId) return;
     const userMsg = chatInput.trim();
     setChatMessages(prev => [...prev, { role: "user", text: userMsg }]);
     setChatInput("");
+    setAiIsLoading(true);
 
-    const currentQ = AI_QUESTIONS[aiStep];
-    if (!currentQ) return;
-
-    const parsed = currentQ.parse(userMsg);
-    setAiCollected(prev => ({ ...prev, ...parsed }));
-
-    const nextStep = aiStep + 1;
-    setAiStep(nextStep);
-
-    if (nextStep < AI_QUESTIONS.length) {
+    try {
+      const res = await api.post("/loads/ai-chat/message", { sessionId: aiSessionId, message: userMsg });
+      const data = res.data.data;
+      setAiStep(data.step);
+      setAiCollected(data.collected);
+      setAiIsComplete(data.isComplete);
       setTimeout(() => {
-        setChatMessages(prev => [...prev, { role: "ai", text: AI_QUESTIONS[nextStep].prompt }]);
-      }, 500);
-    } else {
-      setTimeout(() => {
-        const summary = Object.entries(parsed)
-          .filter(([k]) => k !== "notes" || parsed.notesToCarrier)
-          .map(([k, v]) => {
-            const label = k.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase());
-            return `• ${label}: ${v}`;
-          })
-          .join("\n");
-        setChatMessages(prev => [...prev, {
-          role: "ai",
-          text: `Great! Here's a summary of your load:\n\n${summary}\n\nType "confirm" to create this load, or "edit" to start over.`
-        }]);
-      }, 500);
+        setChatMessages(prev => [...prev, { role: "ai", text: data.message }]);
+      }, 400);
+    } catch {
+      toast.error("Failed to send message");
+    } finally {
+      setAiIsLoading(false);
     }
   };
 
-  const confirmAiLoad = () => {
-    setForm(prev => ({ ...prev, ...aiCollected }));
-    setAiMode(false);
-    setChatMessages([]);
-    setAiStep(0);
-    setAiCollected({});
-    toast.success("Load details filled! Review and post.");
+  const confirmAiLoad = async () => {
+    if (!aiSessionId) return;
+    setAiIsLoading(true);
+    try {
+      const res = await api.post("/loads/ai-chat/confirm", { sessionId: aiSessionId });
+      const load = res.data.data;
+      setAiMode(false);
+      setChatMessages([]);
+      setAiSessionId("");
+      setAiStep(0);
+      setAiCollected({});
+      setAiIsComplete(false);
+      toast.success("Load created successfully!");
+      router.push(`/loads/${load._id}`);
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Failed to create load");
+    } finally {
+      setAiIsLoading(false);
+    }
+  };
+
+  const resetAiChat = async () => {
+    if (!aiSessionId) return;
+    setAiIsLoading(true);
+    try {
+      const res = await api.post("/loads/ai-chat/reset", { sessionId: aiSessionId });
+      const data = res.data.data;
+      setAiStep(data.step);
+      setAiCollected(data.collected);
+      setAiIsComplete(data.isComplete);
+      setChatMessages([{ role: "ai", text: data.message }]);
+    } catch {
+      toast.error("Failed to reset");
+    } finally {
+      setAiIsLoading(false);
+    }
   };
 
   const handleAiChatInput = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (chatInput.trim().toLowerCase() === "confirm" && aiStep >= AI_QUESTIONS.length) {
+      if (chatInput.trim().toLowerCase() === "confirm" && aiIsComplete) {
         confirmAiLoad();
-      } else if (chatInput.trim().toLowerCase() === "edit" && aiStep >= AI_QUESTIONS.length) {
-        startAiChat();
+      } else if (chatInput.trim().toLowerCase() === "edit" && aiIsComplete) {
+        resetAiChat();
       } else {
         sendChatMessage();
       }
@@ -551,6 +564,30 @@ export default function CreateLoadPage() {
           <p className="text-sm font-bold text-muted  mt-1">
             Fill in the details to reach carriers
           </p>
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={() => !aiMode && setAiMode(false)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border",
+                !aiMode
+                  ? "bg-primary border-primary text-white shadow-sm"
+                  : "bg-card border-hairline text-muted hover:border-muted"
+              )}
+            >
+              <Package size={16} weight="bold" /> Manual Form
+            </button>
+            <button
+              onClick={startAiChat}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border",
+                aiMode
+                  ? "bg-primary border-primary text-white shadow-sm"
+                  : "bg-card border-hairline text-muted hover:border-muted"
+              )}
+            >
+              <Robot size={16} weight="bold" /> AI Assistant
+            </button>
+          </div>
         </div>
 
         {/* Step Indicator */}
@@ -600,10 +637,99 @@ export default function CreateLoadPage() {
 
         {/* Card */}
         <div className="rounded-xl border border-hairline bg-card p-8 shadow-2xl backdrop-blur-md">
-          {/* ================================================================ */}
-          {/* STEP 1 — Basic Details                                         */}
-          {/* ================================================================ */}
-          {step === 1 && (
+          {/* AI Chat Mode */}
+          {aiMode && (
+            <div className="flex flex-col h-[520px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-hairline">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Robot size={22} weight="bold" className="text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-ink">AI Load Assistant</h3>
+                    <p className="text-xs text-muted">Answer questions to build your load</p>
+                  </div>
+                </div>
+                <button onClick={exitAiChat} className="p-2 text-muted hover:text-ink transition-colors">
+                  <XCircle size={20} weight="bold" />
+                </button>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
+                {chatMessages.map((msg, i) => (
+                  <div key={i} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
+                    <div className={cn(
+                      "max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                      msg.role === "user"
+                        ? "bg-primary text-white rounded-br-md"
+                        : "bg-surface-soft text-ink rounded-bl-md border border-hairline"
+                    )}>
+                      {msg.role === "ai" && (
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <Robot size={14} weight="bold" className="text-primary" />
+                          <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">FLOW AI</span>
+                        </div>
+                      )}
+                      <p className="whitespace-pre-line">{msg.text}</p>
+                    </div>
+                  </div>
+                ))}
+                {aiIsLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-surface-soft rounded-2xl rounded-bl-md px-4 py-3 border border-hairline">
+                      <div className="flex gap-1.5">
+                        <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <div className="w-2 h-2 bg-muted rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Progress */}
+              {aiStep > 0 && !aiIsComplete && (
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-[10px] font-semibold text-muted mb-1">
+                    <span>Progress</span>
+                    <span>{aiStep} / {12}</span>
+                  </div>
+                  <div className="h-1.5 bg-surface-soft rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${(aiStep / 12) * 100}%` }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={handleAiChatInput}
+                  placeholder={aiIsComplete ? 'Type "confirm" or "edit"...' : "Type your answer..."}
+                  disabled={aiIsLoading}
+                  className="flex-1 h-11 rounded-lg border border-hairline bg-surface-soft px-4 text-sm text-ink outline-none focus:border-primary transition-all disabled:opacity-50"
+                />
+                <button
+                  onClick={() => {
+                    if (chatInput.trim().toLowerCase() === "confirm" && aiIsComplete) confirmAiLoad();
+                    else if (chatInput.trim().toLowerCase() === "edit" && aiIsComplete) resetAiChat();
+                    else sendChatMessage();
+                  }}
+                  disabled={aiIsLoading || !chatInput.trim()}
+                  className="h-11 w-11 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary-active transition-all disabled:opacity-50 shrink-0"
+                >
+                  <PaperPlaneRight size={18} weight="bold" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Manual Form Mode */}
+          {!aiMode && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <h3 className="text-lg font-semibold tracking-tight text-ink mb-2 flex items-center gap-2">
                 <Package size={22} weight="bold" className="text-ink" />
@@ -1299,8 +1425,9 @@ export default function CreateLoadPage() {
           )}
 
           {/* ================================================================ */}
-          {/* NAVIGATION                                                     */}
+          {/* NAVIGATION (Manual Mode Only)                                    */}
           {/* ================================================================ */}
+          {!aiMode && (
           <div className="mt-10 flex justify-between gap-4">
             <button
               onClick={handleBack}
@@ -1347,6 +1474,7 @@ export default function CreateLoadPage() {
               </>
             )}
           </div>
+          )}
         </div>
       </div>
     </PermissionGate>
