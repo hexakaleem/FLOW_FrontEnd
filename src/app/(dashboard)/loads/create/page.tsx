@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useAppSelector } from "@/store/hooks";
 import PermissionGate from "@/components/PermissionGate";
 import { LocationAutocomplete } from "@/components/ui/LocationAutocomplete";
+import { ChatBubbleOvalLeft, ChatBubbleOvalLeftEllipsis, PaperPlaneRight, Robot, XCircle } from "@phosphor-icons/react";
 
 // ---------------------------------------------------------------------------
 // Types
