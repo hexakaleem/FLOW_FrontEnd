@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { useSocket } from "@/hooks/useSocket";
 import {
   Dialog,
   DialogContent,
@@ -179,6 +180,17 @@ export default function MyBookingsPage() {
     didFetchRef.current = true;
     fetchBookings();
   }, [fetchBookings]);
+
+  const { onCounterOfferSubmitted, onCounterOfferAccepted } = useSocket();
+
+  useEffect(() => {
+    onCounterOfferSubmitted(() => {
+      fetchBookings();
+    });
+    onCounterOfferAccepted(() => {
+      fetchBookings();
+    });
+  }, [onCounterOfferSubmitted, onCounterOfferAccepted, fetchBookings]);
 
   // -----------------------------------------------------------------------
   // Actions

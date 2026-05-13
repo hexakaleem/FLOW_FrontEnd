@@ -40,6 +40,18 @@ export function useSocket() {
     handlersRef.current.set("notification", cb);
   }, []);
 
+  const onBookingRequested = useCallback((cb: (data: unknown) => void) => {
+    handlersRef.current.set("booking:requested", cb);
+  }, []);
+
+  const onCounterOfferSubmitted = useCallback((cb: (data: unknown) => void) => {
+    handlersRef.current.set("counteroffer:submitted", cb);
+  }, []);
+
+  const onCounterOfferAccepted = useCallback((cb: (data: unknown) => void) => {
+    handlersRef.current.set("counteroffer:accepted", cb);
+  }, []);
+
   useEffect(() => {
     if (!socketRef.current) return;
 
@@ -56,10 +68,25 @@ export function useSocket() {
 
     socket.on("notification", handleNotification);
     socket.on("load:nearby", handleLoadNearby);
+    socket.on("booking:requested", (data) => {
+      const cb = handlersRef.current.get("booking:requested");
+      if (cb) cb(data);
+    });
+    socket.on("counteroffer:submitted", (data) => {
+      const cb = handlersRef.current.get("counteroffer:submitted");
+      if (cb) cb(data);
+    });
+    socket.on("counteroffer:accepted", (data) => {
+      const cb = handlersRef.current.get("counteroffer:accepted");
+      if (cb) cb(data);
+    });
 
     return () => {
       socket.off("notification", handleNotification);
       socket.off("load:nearby", handleLoadNearby);
+      socket.off("booking:requested");
+      socket.off("counteroffer:submitted");
+      socket.off("counteroffer:accepted");
     };
   }, []);
 
@@ -215,5 +242,5 @@ export function useSocket() {
     };
   }, [accessToken, user, dispatch]);
 
-  return { subscribeToLoad, unsubscribeFromLoad, onLoadStatus, onLoadNearby, onNotification };
+  return { subscribeToLoad, unsubscribeFromLoad, onLoadStatus, onLoadNearby, onNotification, onBookingRequested, onCounterOfferSubmitted, onCounterOfferAccepted };
 }

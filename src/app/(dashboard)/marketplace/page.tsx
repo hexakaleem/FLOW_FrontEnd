@@ -161,13 +161,15 @@ export default function MarketplacePage() {
     }
   }, [isCarrier, isIndependentDriver, showBookDialog, user?.id]);
 
-  const handleBookClick = (loadId: string) => {
-    setBookingLoadId(loadId);
+  const handleBookClick = (load: any) => {
+    setBookingLoadId(load._id);
+    setBookingProposedRate(load.rate || 0);
     setShowBookDialog(true);
   };
 
   const [bookingTruckId, setBookingTruckId] = useState("");
   const [bookingDriverId, setBookingDriverId] = useState("");
+  const [bookingProposedRate, setBookingProposedRate] = useState<number>(0);
 
   const handleConfirmBook = async () => {
     if (!bookingLoadId) return;
@@ -183,6 +185,7 @@ export default function MarketplacePage() {
       }
       body.truckId = bookingTruckId;
       body.driverId = isIndependentDriver ? user!.id : bookingDriverId;
+      body.proposedRate = bookingProposedRate.toString();
       
       const response = await api.post(`/loads/${bookingLoadId}/booking-request`, body);
       if (response.data.success) {
@@ -276,7 +279,8 @@ export default function MarketplacePage() {
                   }}
                   isExpanded={isExpanded}
                   onToggle={() => setExpandedLoadId(isExpanded ? null : load._id)}
-                  onBook={() => handleBookClick(load._id)}
+                  onToggle={() => setExpandedLoadId(isExpanded ? null : load._id)}
+                  onBook={() => handleBookClick(load)}
                 />
                 {isExpanded && (
                   <LoadExpandedDetails
@@ -296,7 +300,7 @@ export default function MarketplacePage() {
                         refId: load._id.slice(-8).toUpperCase(),
                       },
                     }}
-                    onBook={() => handleBookClick(load._id)}
+                    onBook={() => handleBookClick(load)}
                   />
                 )}
               </React.Fragment>
@@ -364,6 +368,25 @@ export default function MarketplacePage() {
                 )}
               </div>
             )}
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-ink flex items-center gap-1">
+                Your Bid / Proposed Rate <span className="text-error">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-muted">$</span>
+                <input
+                  type="number"
+                  className="w-full h-10 rounded-md border border-hairline bg-surface-soft pl-7 pr-3 text-sm font-bold text-primary outline-none focus:border-primary transition-all"
+                  value={bookingProposedRate}
+                  onChange={(e) => setBookingProposedRate(Number(e.target.value))}
+                  placeholder="0.00"
+                />
+              </div>
+              <p className="text-[11px] text-muted">
+                Entering a rate here sends a counter-offer to the broker.
+              </p>
+            </div>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowBookDialog(false)}>

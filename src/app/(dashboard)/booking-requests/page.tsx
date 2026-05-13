@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { useSocket } from "@/hooks/useSocket";
 import PermissionGate from "@/components/PermissionGate";
 
 interface BookingRequest {
@@ -58,6 +59,14 @@ export default function BookingRequestsPage() {
   useEffect(() => {
     fetchRequests();
   }, [fetchRequests]);
+
+  const { onBookingRequested } = useSocket();
+
+  useEffect(() => {
+    onBookingRequested(() => {
+      fetchRequests();
+    });
+  }, [onBookingRequested, fetchRequests]);
 
   const handleAccept = async (loadId: string, requestId: string) => {
     setActionLoading(requestId);

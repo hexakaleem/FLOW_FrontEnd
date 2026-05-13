@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { useAppSelector } from "@/store/hooks";
+import { useSocket } from "@/hooks/useSocket";
 
 const ROLE_ALLOWED_PATHS: Record<string, string[]> = {
   "/loads": ["broker"],
@@ -37,6 +38,9 @@ export default function DashboardLayout({
   const router = useRouter();
   const user = useAppSelector((s) => s.auth.user);
   const [isAuthReady, setIsAuthReady] = useState(false);
+
+  // Initialize real-time listeners
+  useSocket();
 
   useEffect(() => {
     const timer = setTimeout(() => {
