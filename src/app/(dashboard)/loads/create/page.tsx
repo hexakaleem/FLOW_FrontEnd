@@ -590,25 +590,6 @@ export default function CreateLoadPage() {
   return (
     <PermissionGate roles={["broker"]}>
       <div className="max-w-6xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        {/* Header */}
-        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <button
-              onClick={() => router.back()}
-              className="mb-4 inline-flex items-center gap-1.5 font-semibold text-muted hover:text-ink transition-colors"
-            >
-              <ArrowLeft size={14} weight="bold" />
-              Back to Loads
-            </button>
-            <h1 className="text-4xl font-semibold tracking-tight text-ink">
-              Post a New Load
-            </h1>
-            <p className="text-sm font-bold text-muted mt-1">
-              Fill in the details to reach verified carriers
-            </p>
-          </div>
-        </div>
-
         <div className="flex gap-8 items-start">
           {/* Sidebar */}
           <div className="w-64 shrink-0 hidden md:flex flex-col relative">
