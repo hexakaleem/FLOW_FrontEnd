@@ -19,6 +19,7 @@ import {
   Bell,
   SignOut,
   ClockCounterClockwise,
+  Users,
 } from "@phosphor-icons/react";
 
 interface NavItem {
@@ -41,9 +42,9 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { href: "/loads/create", label: "Create Load", Icon: Storefront },
     { href: "/freight-history", label: "Freight History", Icon: ClockCounterClockwise },
     { href: "/payments", label: "Payments", Icon: CurrencyDollar },
+    { href: "/team", label: "Team", Icon: Users, permission: "team:read" },
     { href: "/notifications", label: "Notifications", Icon: Bell },
     { href: "/settings", label: "Settings", Icon: Gear },
-    { href: "/team", label: "Team", Icon: Lifebuoy, permission: "team:read" },
   ],
   carrier: [
     { href: "/dashboard", label: "Dashboard", Icon: Gauge },
