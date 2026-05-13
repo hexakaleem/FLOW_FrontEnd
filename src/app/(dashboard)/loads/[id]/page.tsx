@@ -315,6 +315,23 @@ export default function LoadDetailPage() {
     }
   };
 
+  const handleCancelBid = async (requestId: string) => {
+    if (!confirm("Are you sure you want to cancel this bid?")) return;
+    setActionLoading(requestId);
+    try {
+      await api.put(`/loads/${params.id}/bookings/${requestId}/cancel`);
+      toast.success("Booking request cancelled");
+      fetchData();
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message || "Failed to cancel booking request";
+      toast.error(msg);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   // -----------------------------------------------------------------------
   // Loading state
   // -----------------------------------------------------------------------
@@ -848,6 +865,24 @@ export default function LoadDetailPage() {
                           Cancelled
                         </div>
                       )}
+                    </PermissionGate>
+
+                    {/* Carrier-only actions */}
+                    <PermissionGate roles={["carrier", "independent_driver"]}>
+                      {(req.status === "pending" || (req.status === "accepted" && load.status === "booked")) && (
+                        <button
+                          onClick={() => handleCancelBid(req._id)}
+                          disabled={actionLoading === req._id}
+                          className="btn btn-sm w-full h-9 text-[10px] font-semibold text-danger border border-danger/30 hover:bg-danger-light"
+                        >
+                          {actionLoading === req._id ? (
+                            <CircleNotch size={12} weight="bold" className="animate-spin" />
+                          ) : (
+                            req.status === "accepted" ? "Cancel Booking" : "Withdraw Bid"
+                          )}
+                        </button>
+                      )}
+                    </PermissionGate>
 
                       {/* Inline counter offer input */}
                       {showCounterInput === req._id && (
