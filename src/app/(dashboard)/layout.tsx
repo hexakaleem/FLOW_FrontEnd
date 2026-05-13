@@ -8,7 +8,7 @@ import { useAppSelector } from "@/store/hooks";
 import { useSocket } from "@/hooks/useSocket";
 
 const ROLE_ALLOWED_PATHS: Record<string, string[]> = {
-  "/loads": ["broker"],
+  "/loads": ["broker", "carrier", "independent_driver", "company_driver"],
   "/loads/create": ["broker"],
   "/freight-history": ["broker"],
   "/fleet": ["carrier", "independent_driver", "company_driver"],
