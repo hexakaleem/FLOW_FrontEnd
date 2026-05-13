@@ -29,7 +29,7 @@ import {
 } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { updateOnboardingStatus } from '@/store/slices/authSlice';
+import { updateOnboardingStatus, setCredentials } from '@/store/slices/authSlice';
 import api from '@/lib/axios';
 import {
   Tooltip,
