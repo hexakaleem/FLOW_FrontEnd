@@ -43,6 +43,7 @@ const NAV_BY_ROLE: Record<string, NavItem[]> = {
     { href: "/payments", label: "Payments", Icon: CurrencyDollar },
     { href: "/notifications", label: "Notifications", Icon: Bell },
     { href: "/settings", label: "Settings", Icon: Gear },
+    { href: "/team", label: "Team", Icon: Lifebuoy, permission: "team:read" },
   ],
   carrier: [
     { href: "/dashboard", label: "Dashboard", Icon: Gauge },

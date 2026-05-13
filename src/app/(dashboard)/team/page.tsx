@@ -62,18 +62,22 @@ const roleSchema = z.object({
 type RoleFormData = z.infer<typeof roleSchema>;
 
 const AVAILABLE_PERMISSIONS = [
-  { key: "loads.view", label: "View Loads", category: "Loads" },
-  { key: "loads.book", label: "Book Loads", category: "Loads" },
-  { key: "loads.cancel", label: "Cancel Loads", category: "Loads" },
-  { key: "fleet.view", label: "View Fleet", category: "Fleet" },
-  { key: "fleet.manage", label: "Manage Fleet", category: "Fleet" },
-  { key: "fleet.assign_drivers", label: "Assign Drivers", category: "Fleet" },
-  { key: "team.view", label: "View Team", category: "Team" },
-  { key: "team.manage", label: "Manage Team", category: "Team" },
-  { key: "payments.view", label: "View Payments", category: "Payments" },
-  { key: "analytics.view", label: "View Analytics", category: "Analytics" },
-  { key: "documents.view", label: "View Documents", category: "Documents" },
-  { key: "documents.upload", label: "Upload Documents", category: "Documents" },
+  { key: "load:create", label: "Create Loads", category: "Loads" },
+  { key: "load:read", label: "View Loads", category: "Loads" },
+  { key: "load:book", label: "Book Loads", category: "Loads" },
+  { key: "load:cancel", label: "Cancel Loads", category: "Loads" },
+  { key: "load:update", label: "Update Loads", category: "Loads" },
+  { key: "fleet:read", label: "View Fleet", category: "Fleet" },
+  { key: "fleet:write", label: "Manage Fleet", category: "Fleet" },
+  { key: "fleet:assign_drivers", label: "Assign Drivers", category: "Fleet" },
+  { key: "marketplace:read", label: "View Marketplace", category: "Marketplace" },
+  { key: "marketplace:write", label: "Post to Marketplace", category: "Marketplace" },
+  { key: "team:read", label: "View Team", category: "Team" },
+  { key: "team:write", label: "Manage Team", category: "Team" },
+  { key: "payments:read", label: "View Payments", category: "Payments" },
+  { key: "analytics:read", label: "View Analytics", category: "Analytics" },
+  { key: "documents:read", label: "View Documents", category: "Documents" },
+  { key: "documents:upload", label: "Upload Documents", category: "Documents" },
 ];
 
 // Derived lookup map for quick label access (e.g., in role cards)
