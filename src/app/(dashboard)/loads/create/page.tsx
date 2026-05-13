@@ -427,6 +427,24 @@ export default function CreateLoadPage() {
   // Submit
   // -----------------------------------------------------------------------
 
+  const mapEquipmentType = (type: string) => {
+    const map: Record<string, string> = {
+      'Dry Van': 'dry_van',
+      'Flatbed': 'flatbed',
+      'Reefer': 'reefer',
+      'Step Deck': 'step_deck',
+      'Lowboy': 'lowboy',
+      'Tanker': 'tanker',
+      'Power Only': 'power_only',
+      'Sprinter Van': 'sprinter_van',
+      'Box Truck': 'box_truck',
+      'Hot Shot': 'hot_shot',
+      'Heavy Haul': 'heavy_haul',
+      'Conestoga': 'conestoga',
+    };
+    return map[type] || type.toLowerCase().replace(/ /g, '_');
+  };
+
   const buildPayload = (isPublic: boolean) => {
     return {
       title: form.title || `Load from ${form.originCity} to ${form.destCity}`,
@@ -438,21 +456,21 @@ export default function CreateLoadPage() {
         city: form.originCity,
         state: form.originState,
         zip: form.originZip,
-        contactName: form.originContactName,
-        contactPhone: form.originContactPhone,
+        contactName: form.originContactName || form.shipperName || "Site Contact",
+        contactPhone: form.originContactPhone || form.shipperPhone || "000-000-0000",
       },
       destination: {
         address: form.destAddress,
         city: form.destCity,
         state: form.destState,
         zip: form.destZip,
-        contactName: form.destContactName,
-        contactPhone: form.destContactPhone,
+        contactName: form.destContactName || "Site Contact",
+        contactPhone: form.destContactPhone || "000-000-0000",
       },
       pickupDate: form.pickupTime ? `${form.pickupDate}T${form.pickupTime}:00` : `${form.pickupDate}T08:00:00`,
       deliveryDate: form.deliveryTime ? `${form.deliveryDate}T${form.deliveryTime}:00` : `${form.deliveryDate}T17:00:00`,
       weight: Number(form.weight),
-      truckType: form.equipmentType,
+      truckType: mapEquipmentType(form.equipmentType),
       rate: Number(form.rate),
       rateType: form.rateType === "per_mile" ? "per_mile" : "per_trip",
       commodity: form.commodity,
@@ -520,7 +538,15 @@ export default function CreateLoadPage() {
     setIsSubmitting(true);
     try {
       const payload = buildPayload(true);
-      await api.post("/loads", payload);
+      // 1. Create the load (it will be saved as draft initially)
+      const res = await api.post("/loads", payload);
+      const loadId = res.data?.data?._id || res.data?.data?.id;
+      
+      // 2. Transition the load to 'posted' status so it goes to the loadboard
+      if (loadId) {
+        await api.post(`/loads/${loadId}/post`);
+      }
+
       toast.success("Load posted successfully!");
       router.push("/loads");
     } catch (err: any) {
@@ -1447,13 +1473,27 @@ export default function CreateLoadPage() {
             </button>
 
             {step < 5 ? (
-              <button
-                onClick={handleNext}
-                className="btn btn-primary flex-1 h-14 text-sm font-semibold  shadow-sm"
-              >
-                Next Step
-                <ArrowRight size={20} weight="bold" />
-              </button>
+              <div className="flex-1 flex gap-4">
+                {step >= 3 && (
+                  <button
+                    onClick={() => {
+                      if (!validateCurrentStep()) return;
+                      handlePost();
+                    }}
+                    disabled={isSubmitting}
+                    className="btn btn-secondary flex-1 h-14 text-sm font-semibold shadow-sm border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+                  >
+                    {isSubmitting ? "Posting..." : "Quick Post"}
+                  </button>
+                )}
+                <button
+                  onClick={handleNext}
+                  className="btn btn-primary flex-1 h-14 text-sm font-semibold shadow-sm"
+                >
+                  Next Step
+                  <ArrowRight size={20} weight="bold" />
+                </button>
+              </div>
             ) : (
               <>
                 <button

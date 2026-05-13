@@ -40,6 +40,7 @@ interface Member {
   joinedAt: string;
   profile?: { firstName: string; lastName: string; email: string };
   role?: Role;
+  isInvite?: boolean;
 }
 
 // ── Validation Schemas ──────────────────────────────────────────────────────
@@ -199,7 +200,7 @@ export default function TeamPage() {
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<{
-    type: "member" | "role";
+    type: "member" | "role" | "invite";
     id: string;
     label: string;
   } | null>(null);
@@ -266,7 +267,7 @@ export default function TeamPage() {
     const name = member.profile
       ? `${member.profile.firstName} ${member.profile.lastName}`
       : member.userId;
-    setDeleteTarget({ type: "member", id: member._id, label: name });
+    setDeleteTarget({ type: member.isInvite ? "invite" : "member", id: member.isInvite ? member.id : member._id, label: member.isInvite ? (member.profile?.email || 'Invite') : name });
   };
 
   const executeDelete = async () => {
@@ -276,6 +277,9 @@ export default function TeamPage() {
       if (deleteTarget.type === "member") {
         await api.delete(`/teams/members/${deleteTarget.id}`);
         toast.success(`${deleteTarget.label} removed from team`);
+      } else if (deleteTarget.type === "invite") {
+        await api.delete(`/teams/invites/${deleteTarget.id}`);
+        toast.success(`Invite for ${deleteTarget.label} revoked`);
       } else {
         await api.delete(`/teams/roles/${deleteTarget.id}`);
         toast.success(`Role "${deleteTarget.label}" deleted`);
@@ -619,7 +623,7 @@ export default function TeamPage() {
                           <button
                             onClick={() => confirmRemoveMember(member)}
                             className="h-9 w-9 flex items-center justify-center rounded-md bg-danger-light border border-danger/20 text-danger hover:bg-danger hover:text-white transition-colors"
-                            title="Remove member"
+                            title={member.isInvite ? "Revoke invite" : "Remove member"}
                           >
                             <Trash size={16} weight="bold" />
                           </button>

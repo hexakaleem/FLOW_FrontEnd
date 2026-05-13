@@ -9,9 +9,11 @@ import {
   WarningCircle,
   EnvelopeSimple,
   UserPlus,
+  SignOut,
 } from "@phosphor-icons/react";
 import api from "@/lib/axios";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 type JoinState =
@@ -26,6 +28,7 @@ function JoinPageInner() {
   const router = useRouter();
   const token = searchParams.get("token");
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const dispatch = useAppDispatch();
 
   const [state, setState] = useState<JoinState>({ status: "loading" });
 
@@ -92,6 +95,12 @@ function JoinPageInner() {
             status: "error",
             code: "ALREADY_MEMBER",
             message: errorData?.message || "You are already a member of this organization.",
+          });
+        } else if (status === 403 && errorData?.code === 'EMAIL_MISMATCH') {
+          setState({
+            status: "error",
+            code: "EMAIL_MISMATCH",
+            message: errorData?.message || "Email mismatch.",
           });
         } else if (status === 404) {
           setState({
@@ -212,7 +221,9 @@ function JoinPageInner() {
             ? "Invitation Expired"
             : state.code === "ALREADY_MEMBER"
               ? "Already a Member"
-              : "Invalid Invitation"}
+              : state.code === "EMAIL_MISMATCH"
+                ? "Wrong Account"
+                : "Invalid Invitation"}
         </h1>
         <p className="text-sm font-bold text-muted mb-8">{state.message}</p>
 
@@ -223,7 +234,18 @@ function JoinPageInner() {
         )}
 
         <div className="flex flex-col gap-3">
-          {isAuthenticated ? (
+          {state.code === "EMAIL_MISMATCH" ? (
+            <button
+              onClick={() => {
+                dispatch(logout());
+                router.push(`/login?redirect=/join?token=${token}`);
+              }}
+              className="btn btn-primary h-12 px-8 text-[11px] font-semibold shadow-lg inline-flex items-center gap-2"
+            >
+              <SignOut size={18} weight="bold" />
+              Log Out
+            </button>
+          ) : isAuthenticated ? (
             <Link
               href="/dashboard"
               className="btn btn-primary h-12 px-8 text-[11px] font-semibold  shadow-lg "
